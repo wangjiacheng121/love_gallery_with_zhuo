@@ -20,16 +20,19 @@ var bgm = document.getElementById("bgm");
 var musicBtn = document.getElementById("musicBtn");
 var isPlaying = false;
 var audioFiles = ["assets/audio/music.mp3","assets/audio/bgm.mp3","assets/audio/bgmusic.mp3"];
+var audioIdx = 0;
 var loaded = false;
+var loadingAttempted = false;
 function tryLoadAudio(idx){
 if(idx >= audioFiles.length) return;
+audioIdx = idx;
 bgm.src = audioFiles[idx];
 bgm.load();
 bgm.oncanplaythrough = function(){ loaded = true; };
 bgm.onerror = function(){ tryLoadAudio(idx+1); };
 }
-tryLoadAudio(0);
 window.toggleMusic = function(){
+if(!loadingAttempted){ loadingAttempted = true; tryLoadAudio(0); }
 if(isPlaying){
 bgm.pause();
 musicBtn.textContent = "\u266b";
@@ -53,9 +56,13 @@ var canvas = document.getElementById("fireworks");
 if(canvas){
 var ctx = canvas.getContext("2d");
 var W,H;
+var resizeTimer = null;
 function resize(){W=canvas.width=canvas.parentElement.offsetWidth;H=canvas.height=canvas.parentElement.offsetHeight;}
 resize();
-window.addEventListener("resize", resize);
+window.addEventListener("resize", function(){
+if(resizeTimer) clearTimeout(resizeTimer);
+resizeTimer = setTimeout(function(){ resize(); }, 300);
+});
 var particles = [];
   var rockets = [];
   var colors = ["#ff6b6b","#ffd93d","#6bcbff","#ff8a5c","#a66cff","#ff6b9d","#5cf0ff","#ffdd59"];
@@ -127,12 +134,6 @@ var particles = [];
   document.addEventListener("visibilitychange",function(){
   paused = document.hidden;
   if(!paused && animId === null) animId = requestAnimationFrame(animate);
-  });
-  // resize 防抖
-  var resizeTimer = null;
-  window.addEventListener("resize", function(){
-  if(resizeTimer) clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(function(){ resize(); }, 300);
   });
   animId = requestAnimationFrame(animate);
 }

@@ -21,11 +21,11 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
 .cover-title{font-size:clamp(30px,8vmin,56px);line-height:1.5;letter-spacing:.08em;font-family:"ZCOOL KuaiLe","Yuanti SC",sans-serif;color:#ff6f9c;text-shadow:0 2px 8px rgba(255,111,156,0.3),0 0 40px rgba(255,255,255,0.8);overflow:visible}
 .cover-sub{margin-top:10px;font-size:clamp(13px,3.2vmin,17px);color:#a78bfa;letter-spacing:.2em;opacity:0;font-family:"ZCOOL KuaiLe","Yuanti SC",sans-serif}
 .cover-hint{margin-top:28px;font-size:clamp(12px,2.8vmin,15px);color:#5bc8ff;letter-spacing:.15em;animation:bounce-s 1.8s ease-in-out infinite}
-@keyframes bounce-s{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes bounce-s{0%,100%{transform:translateY(0) translateZ(0)}50%{transform:translateY(-10px) translateZ(0)}}
 .cover-page .cover-sub{animation:popIn 0.8s cubic-bezier(.34,1.56,.64,1) 2s forwards}
 .cover-page .ending-sub{animation:popIn 0.8s cubic-bezier(.34,1.56,.64,1) 2.5s forwards}
 .cover-sticker{position:absolute;pointer-events:none;font-size:clamp(22px,5vmin,40px);animation:floatSticker 4s ease-in-out infinite;z-index:5;transform:translateZ(0);backface-visibility:hidden;will-change:transform,opacity}
-@keyframes floatSticker{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-18px) rotate(6deg)}}
+@keyframes floatSticker{0%,100%{transform:translateY(0) rotate(0deg) translateZ(0)}50%{transform:translateY(-18px) rotate(6deg) translateZ(0)}}
 .timer-wrapper{margin-top:20px;opacity:0;animation:popIn 0.8s cubic-bezier(.34,1.56,.64,1) 2.8s forwards}
 .timer-card{display:inline-block;background:#fff;border-radius:16px;padding:clamp(12px,2.5vmin,22px) clamp(16px,4vmin,36px);box-shadow:0 8px 20px rgba(255,111,156,.18),0 4px 12px rgba(91,200,255,.12);position:relative}
 .timer-label{font-size:clamp(11px,2.4vmin,14px);color:#a78bfa;letter-spacing:.08em;margin-bottom:8px;font-family:"ZCOOL KuaiLe",sans-serif}
@@ -44,7 +44,7 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
 .ending-page{background:linear-gradient(165deg,#fff6fa,#f1f8ff 55%,#fffbef);overflow:hidden}
 #fireworks{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;will-change:transform}
 .ending-content{z-index:10}
-.ending-title{font-size:clamp(28px,7.5vmin,54px);letter-spacing:.1em;font-family:"ZCOOL KuaiLe","Yuanti SC",sans-serif;background:linear-gradient(90deg,#ff6f9c,#a78bfa,#5bc8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.5;filter:drop-shadow(0 0 8px rgba(255,255,255,0.9))}
+.ending-title{font-size:clamp(28px,7.5vmin,54px);letter-spacing:.1em;font-family:"ZCOOL KuaiLe","Yuanti SC",sans-serif;color:#a78bfa;text-shadow:0 2px 8px rgba(167,139,250,0.3),0 0 40px rgba(255,255,255,0.8);line-height:1.5}
 .ending-divider{width:60px;height:3px;background:linear-gradient(90deg,#ff6f9c,#ffd43b,#5bc8ff);margin:14px auto;border-radius:3px;opacity:0;animation:popIn 0.8s cubic-bezier(.34,1.56,.64,1) 0.8s forwards}
 .ending-main{font-size:clamp(20px,5vmin,36px);color:#4b4b64;letter-spacing:.08em;margin-top:10px;line-height:1.5}
 
@@ -113,7 +113,7 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
 
 /* 侧边进度条 */
 .swiper-pagination{right:12px!important;left:auto!important;width:auto!important;top:50%!important;bottom:auto!important;transform:translateY(-50%)!important;display:flex;flex-direction:column;gap:8px}
-.swiper-pagination-bullet{background:#ddd;opacity:.6;width:8px;height:8px;border-radius:4px;transition:all .3s}
+.swiper-pagination-bullet{background:#ddd;opacity:.6;width:8px;height:8px;border-radius:4px;transition:width .3s,opacity .3s,background .3s}
 .swiper-pagination-bullet-active{opacity:1;background:#ff6f9c;width:24px;border-radius:12px;box-shadow:0 0 8px rgba(255,111,156,.4)}
 
 /* 大图查看器 */
@@ -124,13 +124,13 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
 .lightbox.show .lightbox-close{opacity:1}
 .lightbox-caption{position:fixed;left:0;bottom:6%;width:100%;text-align:center;color:#fff;font-size:clamp(12px,3vmin,16px);letter-spacing:.08em;opacity:0;transition:opacity .3s;pointer-events:none;padding:0 16px;font-family:"ZCOOL KuaiLe",sans-serif}
 .lightbox.show .lightbox-caption{opacity:.9}
-.music-btn{position:fixed;bottom:24px;left:24px;z-index:999;width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,111,156,0.3);background:#fff;box-shadow:0 4px 12px rgba(255,111,156,.18);color:#ff6f9c;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s ease;opacity:0.8}
+.music-btn{position:fixed;bottom:24px;left:24px;z-index:999;width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,111,156,0.3);background:#fff;box-shadow:0 4px 12px rgba(255,111,156,.18);color:#ff6f9c;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity .3s,box-shadow .3s;opacity:0.8}
 .heart-float{position:fixed;pointer-events:none;z-index:9999;font-size:clamp(14px,3vmin,28px);animation:heartRise 1.8s ease-out forwards}
-@keyframes heartRise{0%{opacity:1;transform:translateY(0) scale(0.5) rotate(0deg)}100%{opacity:0;transform:translateY(-200px) scale(1.2) rotate(20deg)}}
+@keyframes heartRise{0%{opacity:1;transform:translateY(0) scale(0.5) rotate(0deg) translateZ(0)}100%{opacity:0;transform:translateY(-200px) scale(1.2) rotate(20deg) translateZ(0)}}
 </style>
 </head>
 <body>
-<audio id="bgm" loop preload="auto" style="display:none"></audio>
+<audio id="bgm" loop preload="none" style="display:none"></audio>
 <button class="music-btn" id="musicBtn" onclick="toggleMusic()">&#9835;</button>
 <div class="swiper">
   <div class="swiper-wrapper">

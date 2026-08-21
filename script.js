@@ -142,16 +142,29 @@ direction:"vertical",
 pagination:{el:".swiper-pagination",clickable:true},
 slidesPerView:1,
 spaceBetween:0,
+speed:350,
+threshold:5,
+touchRatio:1.2,
+touchAngle:45,
 touchReleaseOnEdges:true,
+longSwipesMs:200,
+longSwipesRatio:0.3,
+shortSwipes:true,
 mousewheel:{releaseOnEdges:true},
 watchSlidesProgress:false,
 preloadImages:false,
 lazy:{loadPrevNext:false,loadPrevNextAmount:0},
 on:{
 slideChange: function(){
-document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active")});
+var prev = this.slides[this.previousIndex];
+if(prev){ var pp = prev.querySelector(".page"); if(pp) pp.classList.remove("active"); }
 var el = this.slides[this.activeIndex].querySelector(".page");
-if(el){ void el.offsetWidth; el.classList.add("active"); if(el.classList.contains('category-page') && !el.classList.contains('scatter-page')){ el.scrollTop = 0; } }
+if(el){
+el.classList.add("active");
+if(el.classList.contains('category-page') && !el.classList.contains('scatter-page')){
+el.scrollTop = 0;
+}
+}
 }
 }
 });

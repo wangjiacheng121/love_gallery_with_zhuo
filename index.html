@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>窥见你的百态 · 收藏每个朝夕</title>
+<link href="https://fonts.googleapis.cn/css2?family=ZCOOL+KuaiLe&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:linear-gradient(165deg,#fff6fa,#f1f8ff 55%,#fffbef);font-family:"ZCOOL KuaiLe","Yuanti SC","YouYuan","PingFang SC","Microsoft YaHei",sans-serif;color:#4b4b64}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:radial-gradient(#ff6f9c 1px,transparent 1px);background-size:24px 24px;opacity:0.05;pointer-events:none;z-index:0}
+.swiper{width:100%;height:100dvh;position:relative;z-index:1}
+.page{position:relative;width:100%;height:100%;overflow:hidden;will-change:transform;z-index:1}
+
+/* === 封面页 === */
+.cover-page,.ending-page{display:flex;align-items:center;justify-content:center}
+.cover-page{background:linear-gradient(165deg,#fff6fa,#f1f8ff 55%,#fffbef)}
+.cover-content{text-align:center;z-index:10;pointer-events:none;width:min(88vw,600px);position:relative}
+.cover-title{font-size:clamp(30px,8vmin,56px);line-height:1.5;letter-spacing:.08em;font-family:"ZCOOL KuaiLe","Yuanti SC",sans-serif;color:#ff6f9c;text-shadow:0 2px 8px rgba(255,111,156,0.3),0 0 40px rgba(255,255,255,0.8);overflow:visible}
+.cover-sub{margin-top:10px;font-size:clamp(13px,3.2vmin,17px);color:#a78bfa;letter-spacing:.2em;opacity:0;font-family:"ZCOOL KuaiLe","Yuanti SC",sans-serif}
+.cover-hint{margin-top:28px;font-size:clamp(12px,2.8vmin,15px);color:#5bc8ff;letter-spacing:.15em;animation:bounce-s 1.8s ease-in-out infinite}
+@keyframes bounce-s{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.cover-page .cover-sub{animation:popIn 0.8s cubic-bezier(.34,1.56,.64,1) 2s forwards}
+.cover-page .ending-sub{animation:popIn 0.8s cubic-bezier(.34,1.56,.64,1) 2.5s forwards}
+.cover-sticker{position:absolute;pointer-events:none;font-size:clamp(22px,5vmin,40px);animation:floatSticker 4s ease-in-out infinite;z-index:5;transform:translateZ(0);backface-visibility:hidden;will-change:transform,opacity}
+@keyframes floatSticker{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-18px) rotate(6deg)}}
+.timer-wrapper{margin-top:20px;opacity:0;animation:popIn 0.8s cubic-bezier(.34,1.56,.64,1) 2.8s forwards}
+.timer-card{display:inline-block;background:#fff;border-radius:16px;padding:clamp(12px,2.5vmin,22px) clamp(16px,4vmin,36px);box-shadow:0 8px 20px rgba(255,111,156,.18),0 4px 12px rgba(91,200,255,.12);position:relative}
+.timer-label{font-size:clamp(11px,2.4vmin,14px);color:#a78bfa;letter-spacing:.08em;margin-bottom:8px;font-family:"ZCOOL KuaiLe",sans-serif}
+.timer-multi{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(2px,0.5vmin,8px)}
+.tm-row{display:flex;align-items:baseline;gap:2px;margin:0 2px}
+.tm-num{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:clamp(20px,4.5vmin,34px);min-width:clamp(36px,8vmin,70px);text-align:right;letter-spacing:1px}
+#t-years{color:#ff6f9c}
+#t-months{color:#5bc8ff}
+#t-days{color:#ffd43b}
+#t-hours{color:#63e6be}
+#t-minutes{color:#a78bfa}
+#t-seconds{color:#ff9f68}
+.tm-unit{font-size:clamp(10px,2.2vmin,13px);color:#a78bfa;font-family:"Baloo 2",sans-serif;font-weight:600;margin-left:1px}
+
+/* === 结尾页 === */
+.ending-page{background:linear-gradient(165deg,#fff6fa,#f1f8ff 55%,#fffbef);overflow:hidden}
+#fireworks{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;will-change:transform}
+.ending-content{z-index:10}
+.ending-title{font-size:clamp(28px,7.5vmin,54px);letter-spacing:.1em;font-family:"ZCOOL KuaiLe","Yuanti SC",sans-serif;background:linear-gradient(90deg,#ff6f9c,#a78bfa,#5bc8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.5;filter:drop-shadow(0 0 8px rgba(255,255,255,0.9))}
+.ending-divider{width:60px;height:3px;background:linear-gradient(90deg,#ff6f9c,#ffd43b,#5bc8ff);margin:14px auto;border-radius:3px;opacity:0;animation:popIn 0.8s cubic-bezier(.34,1.56,.64,1) 0.8s forwards}
+.ending-main{font-size:clamp(20px,5vmin,36px);color:#4b4b64;letter-spacing:.08em;margin-top:10px;line-height:1.5}
+
+/* === 分类页 === */
+.category-page{padding:2vmin;padding-top:3vmin;background:linear-gradient(165deg,#fff6fa,#f1f8ff 55%,#fffbef);overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
+.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);align-content:start;align-items:start;gap:clamp(8px,1.5vmin,16px);width:100%;height:auto;padding:clamp(6px,1.5vmin,16px);contain:layout style}
+@media(max-width:700px){.photo-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.photo-grid{grid-template-columns:repeat(2,1fr)}}
+.gi{opacity:0;overflow:hidden;border-radius:6px;background:#fff;padding:4px 4px 8px 4px;transform:rotate(var(--rr,0deg)) scale(0.6) translateZ(0);transition:transform 0.3s ease;width:100%;min-width:0;box-shadow:0 6px 16px rgba(255,111,156,.12);position:relative;backface-visibility:hidden;will-change:transform,opacity}
+.gi::before{content:'';position:absolute;top:0;left:0;width:100%;height:5px;background:repeating-linear-gradient(-45deg,transparent,transparent 4px,var(--tape-c,#ff6f9c) 4px,var(--tape-c,#ff6f9c) 8px);z-index:2;pointer-events:none}
+.gi:nth-child(1){--tape-c:#ff6f9c;--rr:-1.5deg}
+.gi:nth-child(2){--tape-c:#5bc8ff;--rr:2deg}
+.gi:nth-child(3){--tape-c:#ffd43b;--rr:-2.5deg}
+.gi:nth-child(4){--tape-c:#63e6be;--rr:1.8deg}
+.gi:nth-child(5){--tape-c:#a78bfa;--rr:-1deg}
+.gi:nth-child(6){--tape-c:#ff9f68;--rr:2.3deg}
+.gi:nth-child(7){--tape-c:#ff6f9c;--rr:-2.8deg}
+.gi:nth-child(8){--tape-c:#5bc8ff;--rr:1.2deg}
+.gi:nth-child(9){--tape-c:#ffd43b;--rr:-1.8deg}
+.gi:nth-child(10){--tape-c:#63e6be;--rr:2.5deg}
+.gi img{width:100%;height:auto;aspect-ratio:auto;object-fit:cover;display:block;border-radius:4px;backface-visibility:hidden;will-change:transform,opacity}
+.gi.face-fix img{height:clamp(120px,32vmin,280px);aspect-ratio:3/4;object-fit:cover;object-position:50% 22%}
+.page.active .gi{animation:popIn 0.6s cubic-bezier(.34,1.56,.64,1) forwards,floatUp 3.5s ease-in-out 0.6s infinite alternate}
+@keyframes popIn{0%{opacity:0;transform:rotate(var(--rr,0deg)) scale(0.6) translateZ(0)}100%{opacity:1;transform:rotate(var(--rr,0deg)) scale(1) translateZ(0)}}
+@keyframes floatUp{0%{transform:rotate(var(--rr,0deg)) scale(1) translateY(0) translateZ(0)}100%{transform:rotate(var(--rr,0deg)) scale(1) translateY(-6px) translateZ(0)}}
+.category-page.scatter-page{overflow:hidden;display:block}
+.scatter-grid{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.scatter-grid .gi{position:absolute;opacity:0;overflow:hidden;border-radius:8px;background:#fff;padding:4px 4px 8px 4px;box-shadow:0 6px 16px rgba(255,111,156,.12);transition:transform 0.3s ease;--tape-c:#a78bfa;transform:translateZ(0);backface-visibility:hidden;will-change:transform,opacity}
+.scatter-grid .gi::before{content:'';position:absolute;top:0;left:0;width:100%;height:5px;background:repeating-linear-gradient(-45deg,transparent,transparent 4px,var(--tape-c,#a78bfa) 4px,var(--tape-c,#a78bfa) 8px);z-index:2;pointer-events:none}
+.scatter-grid .gi img{width:100%;height:auto;aspect-ratio:auto;object-fit:cover;display:block;border-radius:4px;max-height:clamp(150px,40vmin,350px)}
+.page.active .scatter-grid .gi{animation:floatIn 0.8s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes floatIn{0%{opacity:0;transform:translateY(30px) scale(0.6) translateZ(0)}100%{opacity:1;transform:translateY(0) scale(1) translateZ(0)}}
+.category-page .quote{order:-1}
+.quote{position:relative;left:auto;top:auto;transform:none;z-index:20;width:100%;margin:0 auto;text-align:center;pointer-events:none;padding:clamp(10px,1.8vmin,18px) clamp(12px,3vw,24px);backface-visibility:hidden;will-change:transform,opacity}
+.category-page.scatter-page .quote{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(82vw,500px);background:#fff;border-radius:16px;box-shadow:0 8px 20px rgba(255,111,156,.18);padding:clamp(12px,2.5vmin,24px);pointer-events:none}
+.poem-line{font-size:clamp(14px,3.2vmin,20px);color:#4b4b64;letter-spacing:.06em;font-family:"KaiTi","STKaiti","Yuanti SC",serif;opacity:0;margin-bottom:2px;background:linear-gradient(180deg,transparent 62%,#ffe066 62%);display:inline;padding:0 4px}
+.poem-author{font-size:clamp(10px,2.2vmin,13px);color:#a78bfa;letter-spacing:.04em;opacity:0;margin-bottom:6px}
+.poem-author::before{content:'· '}
+.poem-author::after{content:' ·'}
+.q-divider{width:40px;height:2px;background:linear-gradient(90deg,#ff6f9c,#ffd43b);margin:8px auto;border-radius:2px;opacity:0}
+.quote .main{font-size:clamp(20px,5vmin,38px);color:#4b4b64;line-height:1.5;letter-spacing:.06em;margin-top:4px;font-family:"ZCOOL KuaiLe","Yuanti SC",sans-serif}
+.quote .sub{display:inline-block;margin-top:8px;padding:clamp(4px,0.5vmin,7px) clamp(12px,2.5vmin,22px);border-radius:50px;border:2px solid #fff;font-family:"Baloo 2",sans-serif;font-weight:700;font-size:clamp(10px,2.2vmin,14px);color:#fff;background:linear-gradient(90deg,#ff6f9c,#a78bfa);transform:rotate(-3deg) translateZ(0);box-shadow:0 3px 10px rgba(0,0,0,0.08);letter-spacing:0.5px;opacity:0;backface-visibility:hidden;will-change:transform,opacity}
+.quote .ch,.cover-title .ch,.ending-title .ch,.ending-main .ch{display:inline-block;opacity:0;transform:translateY(10px) scale(0.7) translateZ(0);backface-visibility:hidden;will-change:transform,opacity}
+.page.active .ch{animation:charPop 0.5s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes charPop{0%{opacity:0;transform:translateY(10px) scale(0.7) translateZ(0)}100%{opacity:1;transform:translateY(0) scale(1) translateZ(0)}}
+.page.active .poem-line{animation:popIn 0.6s cubic-bezier(.34,1.56,.64,1) 0.3s forwards}
+.page.active .poem-author{animation:popIn 0.6s cubic-bezier(.34,1.56,.64,1) 0.6s forwards}
+.page.active .q-divider{animation:popIn 0.5s cubic-bezier(.34,1.56,.64,1) 0.8s forwards}
+.page.active .quote .sub{animation:popIn 0.6s cubic-bezier(.34,1.56,.64,1) 2.2s forwards}
+
+/* 非当前页动画暂停 — 大幅节省GPU算力 */
+.swiper-slide:not(.swiper-slide-active) .pol,
+.swiper-slide:not(.swiper-slide-active) .quote,
+.swiper-slide:not(.swiper-slide-active) [class*="sticker"],
+.swiper-slide:not(.swiper-slide-active) [class*="emoji"],
+.swiper-slide:not(.swiper-slide-active) .gi,
+.swiper-slide:not(.swiper-slide-active) .ch,
+.swiper-slide:not(.swiper-slide-active) .poem-line,
+.swiper-slide:not(.swiper-slide-active) .poem-author,
+.swiper-slide:not(.swiper-slide-active) .q-divider,
+.swiper-slide:not(.swiper-slide-active) .cover-sub,
+.swiper-slide:not(.swiper-slide-active) .timer-wrapper,
+.swiper-slide:not(.swiper-slide-active) .scatter-grid .gi,
+.swiper-slide:not(.swiper-slide-active) .cover-hint,
+.swiper-slide:not(.swiper-slide-active) .ending-divider{animation-play-state:paused!important}
+
+/* 侧边进度条 */
+.swiper-pagination{right:12px!important;left:auto!important;width:auto!important;top:50%!important;bottom:auto!important;transform:translateY(-50%)!important;display:flex;flex-direction:column;gap:8px}
+.swiper-pagination-bullet{background:#ddd;opacity:.6;width:8px;height:8px;border-radius:4px;transition:all .3s}
+.swiper-pagination-bullet-active{opacity:1;background:#ff6f9c;width:24px;border-radius:12px;box-shadow:0 0 8px rgba(255,111,156,.4)}
+
+/* 大图查看器 */
+.lightbox{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(75,75,100,0.92);z-index:1200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.lightbox.show{opacity:1;pointer-events:auto}
+.lightbox-img{max-width:92vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.lightbox-close{position:fixed;top:20px;right:24px;z-index:1210;width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:rgba(255,111,156,0.8);color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .3s;line-height:1;font-family:sans-serif}
+.lightbox.show .lightbox-close{opacity:1}
+.lightbox-caption{position:fixed;left:0;bottom:6%;width:100%;text-align:center;color:#fff;font-size:clamp(12px,3vmin,16px);letter-spacing:.08em;opacity:0;transition:opacity .3s;pointer-events:none;padding:0 16px;font-family:"ZCOOL KuaiLe",sans-serif}
+.lightbox.show .lightbox-caption{opacity:.9}
+.music-btn{position:fixed;bottom:24px;left:24px;z-index:999;width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,111,156,0.3);background:#fff;box-shadow:0 4px 12px rgba(255,111,156,.18);color:#ff6f9c;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s ease;opacity:0.8}
+.heart-float{position:fixed;pointer-events:none;z-index:9999;font-size:clamp(14px,3vmin,28px);animation:heartRise 1.8s ease-out forwards}
+@keyframes heartRise{0%{opacity:1;transform:translateY(0) scale(0.5) rotate(0deg)}100%{opacity:0;transform:translateY(-200px) scale(1.2) rotate(20deg)}}
+</style>
+</head>
+<body>
+<audio id="bgm" loop preload="auto" style="display:none"></audio>
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">&#9835;</button>
+<div class="swiper">
+  <div class="swiper-wrapper">
+<div class="swiper-slide">
+  <div class="page cover-page">
+    <div class="cover-content">
+      
+<div class="cover-sticker" style="top:-15%;left:-8%;animation-delay:0s">🌸</div>
+      <div class="cover-sticker" style="top:-20%;right:-5%;animation-delay:0.5s">✨</div>
+      <div class="cover-sticker" style="bottom:-10%;left:0%;animation-delay:1s">🌙</div>
+      <div class="cover-sticker" style="bottom:-8%;right:-8%;animation-delay:1.5s">🍩</div>
+      <div class="cover-sticker" style="top:30%;right:-10%;animation-delay:0.8s">🍓</div>
+
+<div class="cover-title">
+      <span class="ch" style="animation-delay:0.5s">窥</span><span class="ch" style="animation-delay:0.62s">见</span><span class="ch" style="animation-delay:0.74s">你</span><span class="ch" style="animation-delay:0.86s">的</span><span class="ch" style="animation-delay:0.98s">百</span><span class="ch" style="animation-delay:1.1s">态</span><span class="ch" style="animation-delay:1.22s"> </span><span class="ch" style="animation-delay:1.3399999999999999s">·</span><span class="ch" style="animation-delay:1.46s"> </span><br><span class="ch" style="animation-delay:1.58s">收</span><span class="ch" style="animation-delay:1.7s">藏</span><span class="ch" style="animation-delay:1.8199999999999998s">每</span><span class="ch" style="animation-delay:1.94s">个</span><span class="ch" style="animation-delay:2.06s">朝</span><span class="ch" style="animation-delay:2.1799999999999997s">夕</span></div>
+      <div class="cover-sub ending-sub">每一种模样，我都想好好收藏</div>
+      <div class="timer-wrapper">
+        <div class="timer-card">
+          <div class="timer-label">我们在一起已经</div>
+          <div class="timer-multi" id="timer">
+            <div class="tm-row"><span class="tm-num" id="t-years">0</span><span class="tm-unit">年</span></div>
+            <div class="tm-row"><span class="tm-num" id="t-months">0</span><span class="tm-unit">月</span></div>
+            <div class="tm-row"><span class="tm-num" id="t-days">0</span><span class="tm-unit">天</span></div>
+            <div class="tm-row"><span class="tm-num" id="t-hours">0</span><span class="tm-unit">时</span></div>
+            <div class="tm-row"><span class="tm-num" id="t-minutes">0</span><span class="tm-unit">分</span></div>
+            <div class="tm-row"><span class="tm-num" id="t-seconds">0</span><span class="tm-unit">秒</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="cover-hint">向下滑动</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/他人拍卓/mmexport1781852961977.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/他人拍卓/1d4fe98d28e20d781df314a4e72564ed.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/他人拍卓/636c5af53e7d09a70b9bef39e90450f0.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/他人拍卓/4e3f39a851948a5d33bd93838194790f.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.28s"><img src="assets/photos/他人拍卓/mmexport1781853358010.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.35000000000000003s"><img src="assets/photos/他人拍卓/mmexport1767173883812.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.42000000000000004s"><img src="assets/photos/他人拍卓/db273ba4c4cfc2705fb665bd8456bae7.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.49000000000000005s"><img src="assets/photos/他人拍卓/4f40d31e9dd993d27024a8f261e414f9.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.56s"><img src="assets/photos/他人拍卓/6b9d0da10aae8b1de7e39ac2ea132eda.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.6300000000000001s"><img src="assets/photos/他人拍卓/e9abdc6990d97cdbf3b2c04e6d25c27c.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">人生若只如初见</div>
+      <div class="poem-author">纳兰性德</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">他</span><span class="ch" style="animation-delay:1.02s">人</span><span class="ch" style="animation-delay:1.1400000000000001s">在</span><span class="ch" style="animation-delay:1.26s">镜</span><span class="ch" style="animation-delay:1.38s">头</span><span class="ch" style="animation-delay:1.5s">里</span><span class="ch" style="animation-delay:1.62s">，</span><span class="ch" style="animation-delay:1.74s">捕</span><span class="ch" style="animation-delay:1.8599999999999999s">捉</span><span class="ch" style="animation-delay:1.98s">了</span><span class="ch" style="animation-delay:2.1s">最</span><span class="ch" style="animation-delay:2.2199999999999998s">初</span><span class="ch" style="animation-delay:2.34s">的</span><span class="ch" style="animation-delay:2.46s">你</span></div>
+      <div class="sub">01 · 初见</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/卓双手对镜拍/8de2dd24cfb869ad063040c521f8e2c9.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/卓双手对镜拍/57b63a89ff9a1fe9d3d5e9ae59fc31d5.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/卓双手对镜拍/b17d07c4fb98dbd80db8df2e188265c0.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/卓双手对镜拍/e5bf20165fcb4e955edf0b54beb1b849.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.28s"><img src="assets/photos/卓双手对镜拍/5453576285b22150100a0748df78befd.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.35000000000000003s"><img src="assets/photos/卓双手对镜拍/15714c1e96387b5d6610fd67f75a39bf.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.42000000000000004s"><img src="assets/photos/卓双手对镜拍/ac8a3752a46ab48e6a200bb5dd6f2645.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.49000000000000005s"><img src="assets/photos/卓双手对镜拍/9396113be103f18817d312b3eb7e9756.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.56s"><img src="assets/photos/卓双手对镜拍/6830a32aaf9a975fac3a17c348fad4c3.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.6300000000000001s"><img src="assets/photos/卓双手对镜拍/7b6910b9945efe3897d59986cb1d7d86.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.7000000000000001s"><img src="assets/photos/卓双手对镜拍/e0282beddd3662f2ad9219e24cb88f54.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.77s"><img src="assets/photos/卓双手对镜拍/c52f2c7539d21c57d26ea68005491df5.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.8400000000000001s"><img src="assets/photos/卓双手对镜拍/514486b53225a356fb35530acf19702d.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.9100000000000001s"><img src="assets/photos/卓双手对镜拍/7bf9b219a2f33ed7df47f665ee1f8f6e.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.9800000000000001s"><img src="assets/photos/卓双手对镜拍/ef47438fdeae4f01cfb690f8008682ff.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.05s"><img src="assets/photos/卓双手对镜拍/cc7d364435608676dfbb486d477c169f.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.12s"><img src="assets/photos/卓双手对镜拍/011e942942ad127dfeb20d7f38bc0561.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.1900000000000002s"><img src="assets/photos/卓双手对镜拍/aeac774f17dcf1b34f40af9b0c792709.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.2600000000000002s"><img src="assets/photos/卓双手对镜拍/d345339ce1b8071fbea22e019029b9f4.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.33s"><img src="assets/photos/卓双手对镜拍/7774bde18f1aa47b0f0af7451e6e63f1.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.4000000000000001s"><img src="assets/photos/卓双手对镜拍/3b20c8ee623ece4be3df84972ba374c2.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.4700000000000002s"><img src="assets/photos/卓双手对镜拍/a5c60f7390d68ba4762efba3a2b90ed9.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.54s"><img src="assets/photos/卓双手对镜拍/aa7498dbd51bdf8fd43368f4673cde49.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">照花前后镜，花面交相映</div>
+      <div class="poem-author">温庭筠</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">镜</span><span class="ch" style="animation-delay:1.02s">中</span><span class="ch" style="animation-delay:1.1400000000000001s">的</span><span class="ch" style="animation-delay:1.26s">你</span><span class="ch" style="animation-delay:1.38s">，</span><span class="ch" style="animation-delay:1.5s">与</span><span class="ch" style="animation-delay:1.62s">镜</span><span class="ch" style="animation-delay:1.74s">外</span><span class="ch" style="animation-delay:1.8599999999999999s">的</span><span class="ch" style="animation-delay:1.98s">世</span><span class="ch" style="animation-delay:2.1s">界</span><span class="ch" style="animation-delay:2.2199999999999998s">静</span><span class="ch" style="animation-delay:2.34s">静</span><span class="ch" style="animation-delay:2.46s">相</span><span class="ch" style="animation-delay:2.58s">望</span></div>
+      <div class="sub">02 · 映照</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/对镜拍+祖传剪刀手/aca3148311f93ff2f82283f9c67d542e.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/对镜拍+祖传剪刀手/0bd256e7cbbe73c03fecbaf738639378.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/对镜拍+祖传剪刀手/f900925c28c968e66c95eba50d96922f.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/对镜拍+祖传剪刀手/7c73b9e3c855dd6f44fa99c53aeb5b06.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.28s"><img src="assets/photos/对镜拍+祖传剪刀手/2a1b63abd539c8732c1e0914a504ae00.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.35000000000000003s"><img src="assets/photos/对镜拍+祖传剪刀手/f7119759913864c5405246f6084b330e.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.42000000000000004s"><img src="assets/photos/对镜拍+祖传剪刀手/f2181de24bbd7e02204968dc87aa287a.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.49000000000000005s"><img src="assets/photos/对镜拍+祖传剪刀手/55c21e3953a40dbfeb7291d1c070a2ba.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.56s"><img src="assets/photos/对镜拍+祖传剪刀手/a808949cd6d022b0a755838f423165f6.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">恰同学少年，风华正茂</div>
+      <div class="poem-author">毛泽东</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">剪</span><span class="ch" style="animation-delay:1.02s">刀</span><span class="ch" style="animation-delay:1.1400000000000001s">手</span><span class="ch" style="animation-delay:1.26s">是</span><span class="ch" style="animation-delay:1.38s">青</span><span class="ch" style="animation-delay:1.5s">春</span><span class="ch" style="animation-delay:1.62s">里</span><span class="ch" style="animation-delay:1.74s">最</span><span class="ch" style="animation-delay:1.8599999999999999s">倔</span><span class="ch" style="animation-delay:1.98s">强</span><span class="ch" style="animation-delay:2.1s">的</span><span class="ch" style="animation-delay:2.2199999999999998s">记</span><span class="ch" style="animation-delay:2.34s">号</span></div>
+      <div class="sub">03 · 定格</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/卖萌卓/44b4870cb5236b0a5b391e40034cde61.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/卖萌卓/3fe1745063ebb65c777b95c9caa077c5.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/卖萌卓/a739cb3452d295479327d8bfa6314ab6.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/卖萌卓/cdb999f79321332274c742d80b0a2d59.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.28s"><img src="assets/photos/卖萌卓/4aa5816aecca45b9e79a2905da968362.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.35000000000000003s"><img src="assets/photos/卖萌卓/329688a12ae46177694871746ec8d193.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.42000000000000004s"><img src="assets/photos/卖萌卓/76a04ab26014f3122513c61f97d6110a.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.49000000000000005s"><img src="assets/photos/卖萌卓/2475bb12d0b46167db1e5efedb0cea82.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.56s"><img src="assets/photos/卖萌卓/84d55f5da011d5fa25ebe365dd8900f0.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.6300000000000001s"><img src="assets/photos/卖萌卓/2ec6f50bcf9447a431db8eadc92a7616.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.7000000000000001s"><img src="assets/photos/卖萌卓/f98798f694ebe3eb47535a6133564c58.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.77s"><img src="assets/photos/卖萌卓/210bc879a3dba61c0cab5a2d253f1f94.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.8400000000000001s"><img src="assets/photos/卖萌卓/0d1f5ffae456ca6041fce7965d2b97ee.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.9100000000000001s"><img src="assets/photos/卖萌卓/93d3c7296fa0ee4bee6980fd154fe279.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.9800000000000001s"><img src="assets/photos/卖萌卓/mmexport1787064564556.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">巧笑倩兮，美目盼兮</div>
+      <div class="poem-author">《诗经》</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">你</span><span class="ch" style="animation-delay:1.02s">一</span><span class="ch" style="animation-delay:1.1400000000000001s">笑</span><span class="ch" style="animation-delay:1.26s">，</span><span class="ch" style="animation-delay:1.38s">整</span><span class="ch" style="animation-delay:1.5s">个</span><span class="ch" style="animation-delay:1.62s">世</span><span class="ch" style="animation-delay:1.74s">界</span><span class="ch" style="animation-delay:1.8599999999999999s">都</span><span class="ch" style="animation-delay:1.98s">亮</span><span class="ch" style="animation-delay:2.1s">了</span></div>
+      <div class="sub">04 · 俏皮</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/委屈卓/bcd3543a3d701e1f6b54756e4e21151b.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/委屈卓/d4c3ed70729e2b9d8acf2ba578df0e6e.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/委屈卓/7af3881560c39af84b80b3497926e7c6.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/委屈卓/ef0d7b7186b3646e601423374941b657.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">此中有真意，欲辨已忘言</div>
+      <div class="poem-author">陶渊明</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">委</span><span class="ch" style="animation-delay:1.02s">屈</span><span class="ch" style="animation-delay:1.1400000000000001s">的</span><span class="ch" style="animation-delay:1.26s">时</span><span class="ch" style="animation-delay:1.38s">候</span><span class="ch" style="animation-delay:1.5s">，</span><span class="ch" style="animation-delay:1.62s">嘴</span><span class="ch" style="animation-delay:1.74s">巴</span><span class="ch" style="animation-delay:1.8599999999999999s">可</span><span class="ch" style="animation-delay:1.98s">以</span><span class="ch" style="animation-delay:2.1s">挂</span><span class="ch" style="animation-delay:2.2199999999999998s">油</span><span class="ch" style="animation-delay:2.34s">瓶</span></div>
+      <div class="sub">05 · 小情绪</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/小困卓/c470c29adef12eb76900648816267108.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/小困卓/5297b3be2760cdb10fb3e9894fad70ac.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/小困卓/8ccc57473a5796344299fd14539518e5.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/小困卓/277465647aade2c08ae4162d7906998b.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.28s"><img src="assets/photos/小困卓/IMG_20260819_001904.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.35000000000000003s"><img src="assets/photos/小困卓/b05867f3e170eb2fceaade60cb8e10f7.jpg" loading="lazy" alt=""></div><div class="gi face-fix" style="animation-delay:0.42000000000000004s"><img src="assets/photos/小困卓/IMG_20260819_001826.jpg" loading="lazy" alt=""></div><div class="gi face-fix" style="animation-delay:0.49000000000000005s"><img src="assets/photos/小困卓/4623f34e1e4a0b9d2670f28d3081f2eb.jpg" loading="lazy" alt=""></div><div class="gi face-fix" style="animation-delay:0.56s"><img src="assets/photos/小困卓/IMG_20260819_001801.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">醉后不知天在水，满船清梦压星河</div>
+      <div class="poem-author">唐珙</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">困</span><span class="ch" style="animation-delay:1.02s">意</span><span class="ch" style="animation-delay:1.1400000000000001s">来</span><span class="ch" style="animation-delay:1.26s">袭</span><span class="ch" style="animation-delay:1.38s">时</span><span class="ch" style="animation-delay:1.5s">，</span><span class="ch" style="animation-delay:1.62s">像</span><span class="ch" style="animation-delay:1.74s">一</span><span class="ch" style="animation-delay:1.8599999999999999s">只</span><span class="ch" style="animation-delay:1.98s">慵</span><span class="ch" style="animation-delay:2.1s">懒</span><span class="ch" style="animation-delay:2.2199999999999998s">的</span><span class="ch" style="animation-delay:2.34s">猫</span></div>
+      <div class="sub">06 · 迷糊</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/认真生活的卓/514b9efa870e5e8a16f8f41b79ae9ad2.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/认真生活的卓/8a0144dafc49c9d86344baa25f94ee32.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/认真生活的卓/27680eff9e2132fe2acdf0bc61290d03.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/认真生活的卓/edc6f2f594727c1b68b914a71381d2fe.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.28s"><img src="assets/photos/认真生活的卓/6dd7cfaec971a1648d09297e77313877.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.35000000000000003s"><img src="assets/photos/认真生活的卓/ca78c751fe294df771e2f6041350e665.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.42000000000000004s"><img src="assets/photos/认真生活的卓/d426c91842a6b7f0a763338dd6398d43.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.49000000000000005s"><img src="assets/photos/认真生活的卓/e298b52afba47044aed728df246cb90b.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.56s"><img src="assets/photos/认真生活的卓/d096f0a19a8d90c1ce58b3d9814aeafe.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.6300000000000001s"><img src="assets/photos/认真生活的卓/230b82bc045269cea2d70b5af7566b7b.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.7000000000000001s"><img src="assets/photos/认真生活的卓/e58437496f70be3ea5d04e2d6335ce82.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.77s"><img src="assets/photos/认真生活的卓/995dab294762eb8215505e1c2cb28244.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.8400000000000001s"><img src="assets/photos/认真生活的卓/adf77700dd3442c0ac9fe83f5b2e0f88.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.9100000000000001s"><img src="assets/photos/认真生活的卓/4bdee091eff4fec3ef6991cce4b9a236.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.9800000000000001s"><img src="assets/photos/认真生活的卓/69a7ad3294052f66ad904be77ffa912a.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.05s"><img src="assets/photos/认真生活的卓/1dcbe35832b2072bc65a1af77c761119.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.12s"><img src="assets/photos/认真生活的卓/d08a6727c364dfc46d920be0aca798b7.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.1900000000000002s"><img src="assets/photos/认真生活的卓/0f4f44ec5df2ef6f18448da640c75b14.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.2600000000000002s"><img src="assets/photos/认真生活的卓/00f124c739eafa1b590b02b0c15ce7a5.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">人间有味是清欢</div>
+      <div class="poem-author">苏轼</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">把</span><span class="ch" style="animation-delay:1.02s">日</span><span class="ch" style="animation-delay:1.1400000000000001s">子</span><span class="ch" style="animation-delay:1.26s">过</span><span class="ch" style="animation-delay:1.38s">成</span><span class="ch" style="animation-delay:1.5s">诗</span><span class="ch" style="animation-delay:1.62s">，</span><span class="ch" style="animation-delay:1.74s">温</span><span class="ch" style="animation-delay:1.8599999999999999s">柔</span><span class="ch" style="animation-delay:1.98s">而</span><span class="ch" style="animation-delay:2.1s">坚</span><span class="ch" style="animation-delay:2.2199999999999998s">定</span></div>
+      <div class="sub">07 · 日常</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/卓和同学/19b08cd8207c3f4757d9a79ba579450f.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/卓和同学/eacef7ae95ee4795b720aefd2593b943.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/卓和同学/528187970cb8ceaaf270b4ba99dfa5c9.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/卓和同学/ae37d82d67aaf0b776f395228a2a276a.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.28s"><img src="assets/photos/卓和同学/d80aae3d16722af385dfca3033a85eed.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">青青子衿，悠悠我心</div>
+      <div class="poem-author">《诗经》</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">青</span><span class="ch" style="animation-delay:1.02s">春</span><span class="ch" style="animation-delay:1.1400000000000001s">是</span><span class="ch" style="animation-delay:1.26s">一</span><span class="ch" style="animation-delay:1.38s">群</span><span class="ch" style="animation-delay:1.5s">人</span><span class="ch" style="animation-delay:1.62s">吵</span><span class="ch" style="animation-delay:1.74s">吵</span><span class="ch" style="animation-delay:1.8599999999999999s">闹</span><span class="ch" style="animation-delay:1.98s">闹</span><span class="ch" style="animation-delay:2.1s">的</span><span class="ch" style="animation-delay:2.2199999999999998s">午</span><span class="ch" style="animation-delay:2.34s">后</span></div>
+      <div class="sub">08 · 同窗</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/卓和家人/7cceb745f918ad07ec60a7cb6bcc037e.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/卓和家人/mmexport1743749966722.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/卓和家人/af389105dc021a4da9c1c739a2899063.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/卓和家人/1686a6693d9cd47370eaab859df45b98.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.28s"><img src="assets/photos/卓和家人/02061f557fb0265a484d4445587bc51e.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.35000000000000003s"><img src="assets/photos/卓和家人/083ae408bd3fe3b9a3c8c220dc891f16.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.42000000000000004s"><img src="assets/photos/卓和家人/15ca5e4b7ce11d853e6299c5475f91cd.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.49000000000000005s"><img src="assets/photos/卓和家人/04801bc44aae896cf60a8ecdbc6d2988.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.56s"><img src="assets/photos/卓和家人/e4f488904fc25e0b6942428b4395f2f8.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.6300000000000001s"><img src="assets/photos/卓和家人/e1eb4ed50d9c04d9167766b45c7105ee.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.7000000000000001s"><img src="assets/photos/卓和家人/e04e08290764ddeee43c10256c25baeb.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.77s"><img src="assets/photos/卓和家人/f1892a04de374d52d9c81136ef9d7c5d.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.8400000000000001s"><img src="assets/photos/卓和家人/9adbc750d759f56d3d2f7e55119a0b0b.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.9100000000000001s"><img src="assets/photos/卓和家人/5f8ec62f3a365b029644585768a62ec0(1).jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.9800000000000001s"><img src="assets/photos/卓和家人/2428dbf66460f00f43acaf556523515a.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.05s"><img src="assets/photos/卓和家人/748f5bf89ef0dcf6edc966ba76773bdd.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.12s"><img src="assets/photos/卓和家人/aafb131bcb093c13656e7036c238cc58.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.1900000000000002s"><img src="assets/photos/卓和家人/82d1b9f71aa3bc2de4fda2ea4396806f.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.2600000000000002s"><img src="assets/photos/卓和家人/b74a2a6ea759c7c97b8cc9d285a782b4.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.33s"><img src="assets/photos/卓和家人/bb1f0f251426306aba660ccae17540f4.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.4000000000000001s"><img src="assets/photos/卓和家人/7fd91dd3c98a041ddb15999855619026.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">此心安处是吾乡</div>
+      <div class="poem-author">苏轼</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">家</span><span class="ch" style="animation-delay:1.02s">是</span><span class="ch" style="animation-delay:1.1400000000000001s">永</span><span class="ch" style="animation-delay:1.26s">远</span><span class="ch" style="animation-delay:1.38s">亮</span><span class="ch" style="animation-delay:1.5s">着</span><span class="ch" style="animation-delay:1.62s">灯</span><span class="ch" style="animation-delay:1.74s">的</span><span class="ch" style="animation-delay:1.8599999999999999s">那</span><span class="ch" style="animation-delay:1.98s">扇</span><span class="ch" style="animation-delay:2.1s">窗</span></div>
+      <div class="sub">09 · 归处</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/两人为数不多的合影/4a2e491d5289cda54b5ebaba9f66a952.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/两人为数不多的合影/66f437ed5248cec533882d653b4d4b40.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/两人为数不多的合影/6a6e1d4e35f3dcb96c5dc2e6928e24e0.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/两人为数不多的合影/mmexport1784600120540.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.28s"><img src="assets/photos/两人为数不多的合影/cb76d18842793df30eccb423d6115744.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">愿我如星君如月，夜夜流光相皎洁</div>
+      <div class="poem-author">范成大</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">时</span><span class="ch" style="animation-delay:1.02s">光</span><span class="ch" style="animation-delay:1.1400000000000001s">把</span><span class="ch" style="animation-delay:1.26s">你</span><span class="ch" style="animation-delay:1.38s">我</span><span class="ch" style="animation-delay:1.5s">，</span><span class="ch" style="animation-delay:1.62s">轻</span><span class="ch" style="animation-delay:1.74s">轻</span><span class="ch" style="animation-delay:1.8599999999999999s">叠</span><span class="ch" style="animation-delay:1.98s">在</span><span class="ch" style="animation-delay:2.1s">一</span><span class="ch" style="animation-delay:2.2199999999999998s">起</span></div>
+      <div class="sub">10 · 珍藏</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="photo-grid"><div class="gi" style="animation-delay:0.0s"><img src="assets/photos/就是很美的卓/6e07756fe7337e80347d5a84633f5473.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.07s"><img src="assets/photos/就是很美的卓/3dddc852b400a1d7210f3e8ddc12130b.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.14s"><img src="assets/photos/就是很美的卓/fe8472db1fd712c9b0c70a65dac067d7.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.21000000000000002s"><img src="assets/photos/就是很美的卓/d8350abbdf99e14d501b5e013da769d0.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.28s"><img src="assets/photos/就是很美的卓/bd7bf269dd41f336d493d4df1669e623.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.35000000000000003s"><img src="assets/photos/就是很美的卓/ae48c7ada1875a7c37c112bf1c8f8dae.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.42000000000000004s"><img src="assets/photos/就是很美的卓/85911e03f23ea6b77b3d986a57d80a0c.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.49000000000000005s"><img src="assets/photos/就是很美的卓/24cce7a40ad2e359ca621ab4480931c9.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.56s"><img src="assets/photos/就是很美的卓/afc9acee2cc675e21725514a75515296.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.6300000000000001s"><img src="assets/photos/就是很美的卓/285edb5abaccb008d603ce28af1b7386.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.7000000000000001s"><img src="assets/photos/就是很美的卓/28d2e42e0d084804d1821b37565427e2.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.77s"><img src="assets/photos/就是很美的卓/0faa9cf0f6e74aae1cd4c07d39f64dc4.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.8400000000000001s"><img src="assets/photos/就是很美的卓/96d606a351da3b62238e05684e4f1773.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.9100000000000001s"><img src="assets/photos/就是很美的卓/90b5086cd08fdf2989278fec6556ae03.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:0.9800000000000001s"><img src="assets/photos/就是很美的卓/766d8bf3ddb55bb745aa61cb142b19e1.jpg" loading="lazy" alt=""></div><div class="gi" style="animation-delay:1.05s"><img src="assets/photos/就是很美的卓/7958ff553b8b301e697e33952424c73e.jpg" loading="lazy" alt=""></div></div>
+    <div class="quote">
+      <div class="poem-line">云想衣裳花想容</div>
+      <div class="poem-author">李白</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">不</span><span class="ch" style="animation-delay:1.02s">需</span><span class="ch" style="animation-delay:1.1400000000000001s">要</span><span class="ch" style="animation-delay:1.26s">理</span><span class="ch" style="animation-delay:1.38s">由</span><span class="ch" style="animation-delay:1.5s">，</span><span class="ch" style="animation-delay:1.62s">你</span><span class="ch" style="animation-delay:1.74s">站</span><span class="ch" style="animation-delay:1.8599999999999999s">在</span><span class="ch" style="animation-delay:1.98s">那</span><span class="ch" style="animation-delay:2.1s">里</span><span class="ch" style="animation-delay:2.2199999999999998s">就</span><span class="ch" style="animation-delay:2.34s">是</span><span class="ch" style="animation-delay:2.46s">风</span><span class="ch" style="animation-delay:2.58s">景</span></div>
+      <div class="sub">11 · 美好</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page">
+    <div class="scatter-grid">
+      <div class="gi" style="top:6%;left:5%;width:clamp(140px,38vmin,320px);transform:rotate(-3deg);animation-delay:0.0s"><img src="assets/photos/感觉有艺术感_很喜欢的几张/mmexport1783162943069.jpg" loading="lazy" alt=""></div>
+      <div class="gi" style="top:12%;right:5%;width:clamp(120px,32vmin,280px);transform:rotate(4deg);animation-delay:0.12s"><img src="assets/photos/感觉有艺术感_很喜欢的几张/52facfc79056f492473d137da75aac29.jpg" loading="lazy" alt=""></div>
+      <div class="gi" style="bottom:8%;left:50%;transform:translateX(-50%) rotate(-2deg);width:clamp(130px,35vmin,300px);animation-delay:0.24s"><img src="assets/photos/感觉有艺术感_很喜欢的几张/b2da4fd917ac6b9019733faa5cb9f567.jpg" loading="lazy" alt=""></div>
+    </div>
+    <div class="quote">
+      <div class="poem-line">疏影横斜水清浅，暗香浮动月黄昏</div>
+      <div class="poem-author">林逋</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">光</span><span class="ch" style="animation-delay:1.02s">影</span><span class="ch" style="animation-delay:1.1400000000000001s">捉</span><span class="ch" style="animation-delay:1.26s">住</span><span class="ch" style="animation-delay:1.38s">了</span><span class="ch" style="animation-delay:1.5s">你</span><span class="ch" style="animation-delay:1.62s">最</span><span class="ch" style="animation-delay:1.74s">美</span><span class="ch" style="animation-delay:1.8599999999999999s">的</span><span class="ch" style="animation-delay:1.98s">样</span><span class="ch" style="animation-delay:2.1s">子</span></div>
+      <div class="sub">12 · 光影</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page ending-page">
+    <canvas id="fireworks"></canvas>
+    <div class="cover-content ending-content">
+      <div class="ending-title"><span class="ch" style="animation-delay:0.5s">两</span><span class="ch" style="animation-delay:0.62s">载</span><span class="ch" style="animation-delay:0.74s">春</span><span class="ch" style="animation-delay:0.86s">秋</span><span class="ch" style="animation-delay:0.98s">，</span><span class="ch" style="animation-delay:1.1s">朝</span><span class="ch" style="animation-delay:1.22s">暮</span><span class="ch" style="animation-delay:1.3399999999999999s">如</span><span class="ch" style="animation-delay:1.46s">初</span></div>
+      <div class="ending-divider"></div>
+      <div class="ending-main"><span class="ch" style="animation-delay:1.0s">岁</span><span class="ch" style="animation-delay:1.12s">月</span><span class="ch" style="animation-delay:1.24s">漫</span><span class="ch" style="animation-delay:1.3599999999999999s">长</span><span class="ch" style="animation-delay:1.48s">，</span><span class="ch" style="animation-delay:1.6s">然</span><span class="ch" style="animation-delay:1.72s">而</span><span class="ch" style="animation-delay:1.8399999999999999s">值</span><span class="ch" style="animation-delay:1.96s">得</span><span class="ch" style="animation-delay:2.08s">等</span><span class="ch" style="animation-delay:2.2s">待</span></div>
+      <div class="cover-sub">从2024到2026 · 每一个日子都算数</div>
+    </div>
+  </div>
+</div>
+  </div>
+  <div class="swiper-pagination"></div>
+</div>
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-close" id="lightboxClose">&#215;</div>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="">
+  <div class="lightbox-caption" id="lightboxCaption"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+(function(){
+var startTime = new Date(2024, 10, 1, 22, 5, 0);
+function updateTimer(){
+var now = new Date();
+var diff = now - startTime;
+if(diff <= 0) return;
+var ms = diff;
+document.getElementById("t-years").textContent = (ms / (365.25*24*60*60*1000)).toFixed(3);
+document.getElementById("t-months").textContent = (ms / (30.4375*24*60*60*1000)).toFixed(3);
+document.getElementById("t-days").textContent = (ms / (24*60*60*1000)).toFixed(3);
+document.getElementById("t-hours").textContent = (ms / (60*60*1000)).toFixed(3);
+document.getElementById("t-minutes").textContent = (ms / (60*1000)).toFixed(3);
+document.getElementById("t-seconds").textContent = Math.floor(ms / 1000);
+}
+updateTimer();
+setInterval(updateTimer, 100);
+
+var bgm = document.getElementById("bgm");
+var musicBtn = document.getElementById("musicBtn");
+var isPlaying = false;
+var audioFiles = ["assets/audio/music.mp3","assets/audio/bgm.mp3","assets/audio/bgmusic.mp3"];
+var loaded = false;
+function tryLoadAudio(idx){
+if(idx >= audioFiles.length) return;
+bgm.src = audioFiles[idx];
+bgm.load();
+bgm.oncanplaythrough = function(){ loaded = true; };
+bgm.onerror = function(){ tryLoadAudio(idx+1); };
+}
+tryLoadAudio(0);
+window.toggleMusic = function(){
+if(isPlaying){
+bgm.pause();
+musicBtn.textContent = "\u266b";
+isPlaying = false;
+} else {
+bgm.play().then(function(){
+musicBtn.textContent = "\u266a";
+isPlaying = true;
+}).catch(function(){});
+}
+};
+document.addEventListener("click", function(){
+if(!loaded || isPlaying) return;
+bgm.play().then(function(){
+musicBtn.textContent = "\u266a";
+isPlaying = true;
+}).catch(function(){});
+}, {once:true});
+
+var canvas = document.getElementById("fireworks");
+if(canvas){
+var ctx = canvas.getContext("2d");
+var W,H;
+function resize(){W=canvas.width=canvas.parentElement.offsetWidth;H=canvas.height=canvas.parentElement.offsetHeight;}
+resize();
+window.addEventListener("resize", resize);
+var particles = [];
+var rockets = [];
+var colors = ["#ff6b6b","#ffd93d","#6bcbff","#ff8a5c","#a66cff","#ff6b9d","#5cf0ff","#ffdd59"];
+function rand(mi,ma){return Math.random()*(ma-mi)+mi;}
+function createRocket(){
+var x = rand(W*0.15, W*0.85);
+var y = H;
+var targetY = rand(H*0.08, H*0.45);
+var speed = rand(H*0.012, H*0.022);
+var angle = -Math.PI/2 + rand(-0.15,0.15);
+return {x:x, y:y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed, targetY:targetY, trail:[]};
+}
+function explode(x,y,color){
+var count = Math.floor(rand(50,90));
+for(var i=0;i<count;i++){
+var a = rand(0,Math.PI*2);
+var s = rand(2,8);
+var sz = rand(2,5);
+var l = rand(40,90);
+particles.push({x:x, y:y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, size:sz, color:color, life:l, maxLife:l, gravity:0.06, decay:0.985, alpha:1});
+}
+}
+var lastRocket = 0;
+function animate(time){
+requestAnimationFrame(animate);
+ctx.globalCompositeOperation = "destination-out";
+ctx.fillStyle = "rgba(0,0,0,0.18)";
+ctx.fillRect(0,0,W,H);
+ctx.globalCompositeOperation = "lighter";
+if(time - lastRocket > rand(200,600)){
+lastRocket = time;
+if(rockets.length < 5) rockets.push(createRocket());
+}
+for(var i=rockets.length-1;i>=0;i--){
+var r = rockets[i];
+r.x += r.vx; r.y += r.vy; r.vy += 0.004;
+r.trail.push({x:r.x, y:r.y});
+if(r.trail.length > 12) r.trail.shift();
+for(var t=0;t<r.trail.length;t++){
+var a = t / r.trail.length * 0.6;
+ctx.beginPath();
+ctx.arc(r.trail[t].x, r.trail[t].y, 2, 0, Math.PI*2);
+ctx.fillStyle = "rgba(255,220,150," + a + ")";
+ctx.fill();
+}
+if(r.y <= r.targetY || r.vy > 0){
+var c = colors[Math.floor(Math.random()*colors.length)];
+explode(r.x, r.y, c);
+rockets.splice(i,1);
+}
+}
+for(var i=particles.length-1;i>=0;i--){
+var p = particles[i];
+p.x += p.vx; p.y += p.vy; p.vy += p.gravity;
+p.vx *= p.decay; p.vy *= p.decay; p.life--;
+p.alpha = p.life / p.maxLife;
+if(p.life <= 0 || p.y > H+10){ particles.splice(i,1); continue; }
+ctx.globalAlpha = p.alpha;
+ctx.beginPath();
+ctx.arc(p.x, p.y, p.size * p.alpha, 0, Math.PI*2);
+ctx.fillStyle = p.color; ctx.fill();
+ctx.shadowBlur = 15; ctx.shadowColor = p.color; ctx.fill();
+ctx.shadowBlur = 0;
+}
+ctx.globalAlpha = 1;
+}
+requestAnimationFrame(animate);
+}
+
+const sw = new Swiper(".swiper",{
+direction:"vertical",
+pagination:{el:".swiper-pagination",clickable:true},
+slidesPerView:1,
+spaceBetween:0,
+touchReleaseOnEdges:true,
+mousewheel:{releaseOnEdges:true},
+keyboard:true,
+on:{
+slideChange: function(){
+document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active")});
+var el = this.slides[this.activeIndex].querySelector(".page");
+if(el){ void el.offsetWidth; el.classList.add("active"); if(el.classList.contains('category-page') && !el.classList.contains('scatter-page')){ el.scrollTop = 0; } }
+}
+}
+});
+var firstPage = document.querySelector(".page");
+if(firstPage) firstPage.classList.add("active");
+
+// ===== 大图查看：点击缩略图展示整张图片 =====
+var lightbox = document.getElementById('lightbox');
+var lbImg = document.getElementById('lightboxImg');
+var lbCap = document.getElementById('lightboxCaption');
+var lbClose = document.getElementById('lightboxClose');
+function openLightbox(img){
+  if(!img || !img.src) return;
+  lbImg.src = img.getAttribute('data-full') || img.src;
+  lbCap.textContent = img.getAttribute('data-caption') || '';
+  lightbox.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox(){
+  lightbox.classList.remove('show');
+  document.body.style.overflow = '';
+}
+if(lightbox){
+  lbClose.addEventListener('click', function(e){ e.stopPropagation(); closeLightbox(); });
+  lightbox.addEventListener('click', function(e){
+    if(e.target === lightbox || e.target === lbImg) closeLightbox();
+  });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLightbox(); });
+}
+// 绑定缩略图点击事件（.gi 内图片）
+if(document.body.addEventListener){
+  document.body.addEventListener('click', function(e){
+    var t = e.target;
+    while(t && t.tagName !== 'IMG'){ t = t.parentNode; }
+    if(t && t.tagName === 'IMG'){
+      var gi = t.closest ? t.closest('.gi') : null;
+      if(gi && !lightbox.classList.contains('show')){
+        e.preventDefault();
+        openLightbox(t);
+      }
+    }
+  });
+}
+})();
+</script>
+</body>
+</html>

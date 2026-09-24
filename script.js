@@ -49,8 +49,10 @@ bgm.load();
 bgm.oncanplaythrough = function(){ loaded = true; };
 bgm.onerror = function(){ tryLoadAudio(idx+1); };
 }
-window.toggleMusic = function(){
+
+// 页面加载即开始预加载音频（提前缓冲，避免点击后长时间无声）
 if(!loadingAttempted){ loadingAttempted = true; tryLoadAudio(0); }
+window.toggleMusic = function(){
 if(isPlaying){
 bgm.pause();
 musicBtn.textContent = "\u266b";
@@ -63,7 +65,7 @@ isPlaying = true;
 }
 };
 document.addEventListener("click", function(){
-if(!loaded || isPlaying) return;
+if(isPlaying) return;
 bgm.play().then(function(){
 musicBtn.textContent = "\u266a";
 isPlaying = true;
@@ -180,6 +182,7 @@ threshold:5,
 touchRatio:1.2,
 touchAngle:45,
 touchReleaseOnEdges:true,
+touchStartPreventDefault:false,
 longSwipesMs:200,
 longSwipesRatio:0.3,
 shortSwipes:true,
@@ -212,6 +215,75 @@ else { if(window.__timerStop) window.__timerStop(); }
 var firstPage = document.querySelector(".page");
 if(firstPage) firstPage.classList.add("active");
 
+/* === 手势协调器：可滚动分类页交给原生滚动，边界手势交给 Swiper 翻页 === */
+(function(){
+  var GESTURE_MIN = 50;   // 触发翻页所需最小纵向位移(px)
+  var EDGE_SLACK  = 2;    // 边缘判定容差(px)
+  if(typeof sw === "undefined" || !sw) return;   // 引用同一顶层作用域的 Swiper 实例
+  var startY = 0, lastY = 0, armed = false, tracked = false;
+  var startAtTop = false, startAtBottom = false, wasScrollable = false;
+
+  function curPage(){
+    var sl = sw.slides && sw.slides[sw.activeIndex];
+    return sl ? sl.querySelector(".page") : null;
+  }
+  function scrollable(p){
+    if(!p || !p.classList.contains("category-page")) return false;
+    if(p.classList.contains("scatter-page")) return false;
+    return (p.scrollHeight - p.clientHeight) > 4;
+  }
+  function atTop(p){ return p.scrollTop <= EDGE_SLACK; }
+  function atBottom(p){ return (p.scrollHeight - p.clientHeight - p.scrollTop) <= EDGE_SLACK; }
+
+  function onStart(ev){
+    tracked = false; armed = false;
+    startAtTop = false; startAtBottom = false; wasScrollable = false;
+    var t = ev.touches && ev.touches[0];
+    if(!t) return;
+    startY = lastY = t.clientY;
+    var p = curPage();
+    if(scrollable(p)){
+      wasScrollable = true;
+      startAtTop = atTop(p);
+      startAtBottom = atBottom(p);
+      sw.allowTouchMove = false;   // 让位给内层原生滚动
+      armed = true;
+    } else {
+      sw.allowTouchMove = true;    // 交给 Swiper 直接翻页
+    }
+    tracked = true;
+  }
+
+  function onMove(ev){
+    if(!tracked) return;
+    var t = ev.touches && ev.touches[0];
+    if(!t) return;
+    lastY = t.clientY;
+  }
+
+  function onEnd(ev){
+    if(!tracked) return;
+    tracked = false;
+    sw.allowTouchMove = true;      // 立即恢复，不影响后续翻页
+    if(!armed) return;             // 起点不可滚动 -> 已由 Swiper 处理
+    var t = (ev.changedTouches && ev.changedTouches[0]) || null;
+    var ey = t ? t.clientY : lastY;
+    var dy = ey - startY;
+    if(dy <= -GESTURE_MIN && startAtBottom){          // 起手即贴底 + 继续上滑 -> 下一页
+      if(!sw.isEnd) sw.slideNext();
+    } else if(dy >= GESTURE_MIN && startAtTop){       // 起手即贴顶 + 继续下滑 -> 上一页
+      if(!sw.isBeginning) sw.slidePrev();
+    }
+  }
+
+  function onCancel(){ tracked = false; armed = false; sw.allowTouchMove = true; }
+
+  var opt = { passive: true, capture: true };
+  document.addEventListener("touchstart", onStart, opt);
+  document.addEventListener("touchmove",  onMove,  opt);
+  document.addEventListener("touchend",   onEnd,   opt);
+  document.addEventListener("touchcancel", onCancel, opt);
+})();
 // ===== 相邻页图片预取：让翻页更跟手（每页最多预取 6 张，避免流量浪费）=====
 (function(){
   var preloaded = {};

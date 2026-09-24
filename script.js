@@ -14,7 +14,25 @@ document.getElementById("t-minutes").textContent = (ms / (60*1000)).toFixed(3);
 document.getElementById("t-seconds").textContent = Math.floor(ms / 1000);
 }
 updateTimer();
-setInterval(updateTimer, 1000);
+// 计时器仅封面页运行；后台时也暂停，避免无谓唤醒
+var timerId = null;
+function startTimer(){
+if(timerId !== null) return;
+updateTimer();
+timerId = setInterval(updateTimer, 1000);
+}
+function stopTimer(){
+if(timerId === null) return;
+clearInterval(timerId);
+timerId = null;
+}
+window.__timerStart = startTimer;
+window.__timerStop = stopTimer;
+document.addEventListener("visibilitychange", function(){
+if(document.hidden){ stopTimer(); }
+else if(document.querySelector(".cover-page.active")){ startTimer(); }
+});
+startTimer();
 
 var bgm = document.getElementById("bgm");
 var musicBtn = document.getElementById("musicBtn");
@@ -89,8 +107,8 @@ var particles = [];
   var animId = null;
   var paused = false;
   function animate(time){
+  if(!wanted || paused){ animId = null; return; }
   animId = requestAnimationFrame(animate);
-  if(paused) return;
   ctx.globalCompositeOperation = "destination-out";
   ctx.fillStyle = "rgba(0,0,0,0.18)";
   ctx.fillRect(0,0,W,H);
@@ -131,11 +149,25 @@ var particles = [];
   ctx.globalAlpha = 1;
   }
   // 后台暂停/恢复 — 节省CPU/GPU
-  document.addEventListener("visibilitychange",function(){
+document.addEventListener("visibilitychange",function(){
   paused = document.hidden;
-  if(!paused && animId === null) animId = requestAnimationFrame(animate);
-  });
-  animId = requestAnimationFrame(animate);
+  if(!paused && animId === null && wanted) animId = requestAnimationFrame(animate);
+});
+// 按需启动：只有滑到结尾页才跑烟花，避免用户在前几页浏览时后台空耗
+var wanted = false;
+window.__fwStart = function(){
+  if(wanted) return;
+  wanted = true; paused = false;
+  if(animId === null) animId = requestAnimationFrame(animate);
+};
+window.__fwStop = function(){
+  wanted = false;
+  if(animId !== null){ cancelAnimationFrame(animId); animId = null; }
+};
+  // 若首屏就是结尾页（极少），直接启动
+  if(canvas.closest && canvas.closest(".swiper-slide") === document.querySelector(".swiper-slide:last-child")){
+  window.__fwStart();
+  }
 }
 
 const sw = new Swiper(".swiper",{
@@ -166,11 +198,43 @@ if(el.classList.contains('category-page') && !el.classList.contains('scatter-pag
 el.scrollTop = 0;
 }
 }
+// 烟花：仅结尾页运行，离开即停
+var isEnding = el && el.classList.contains('ending-page');
+if(isEnding){ if(window.__fwStart) window.__fwStart(); }
+else { if(window.__fwStop) window.__fwStop(); }
+// 计时器：仅封面页运行
+var isCover = el && el.classList.contains('cover-page');
+if(isCover){ if(window.__timerStart) window.__timerStart(); }
+else { if(window.__timerStop) window.__timerStop(); }
 }
 }
 });
 var firstPage = document.querySelector(".page");
 if(firstPage) firstPage.classList.add("active");
+
+// ===== 相邻页图片预取：让翻页更跟手（每页最多预取 6 张，避免流量浪费）=====
+(function(){
+  var preloaded = {};
+  function preloadSlide(idx){
+    if(idx < 0 || idx >= sw.slides.length) return;
+    var imgs = sw.slides[idx].querySelectorAll('img[src*="assets/photos/"]');
+    var n = 0;
+    for(var i = 0; i < imgs.length && n < 6; i++){
+      var s = imgs[i].getAttribute('src');
+      if(!s || preloaded[s]) continue;
+      preloaded[s] = 1; n++;
+      var im = new Image();
+      im.decoding = 'async';
+      im.src = s;
+    }
+  }
+  // 首次进入：预取第 2 页
+  preloadSlide(1);
+  sw.on('slideChange', function(){
+    preloadSlide(this.activeIndex + 1);
+    preloadSlide(this.activeIndex - 1);
+  });
+})();
 
 // ===== 大图查看：点击缩略图展示整张图片 =====
 var lightbox = document.getElementById('lightbox');

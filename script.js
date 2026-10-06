@@ -167,7 +167,7 @@ window.__fwStop = function(){
   if(animId !== null){ cancelAnimationFrame(animId); animId = null; }
 };
   // 若首屏就是结尾页（极少），直接启动
-  if(canvas.closest && canvas.closest(".swiper-slide") === document.querySelector(".swiper-slide:last-child")){
+  if(canvas.closest && canvas.closest(".swiper-slide").classList.contains("swiper-slide-active")){
   window.__fwStart();
   }
 }
@@ -238,6 +238,9 @@ if(firstPage) firstPage.classList.add("active");
   function onStart(ev){
     tracked = false; armed = false;
     startAtTop = false; startAtBottom = false; wasScrollable = false;
+    // 表单控件（输入框/文本域）内的手势交给原生处理，避免误触发翻页
+    var tg = ev.target;
+    if(tg && tg.closest && tg.closest('textarea,input,select')) return;
     var t = ev.touches && ev.touches[0];
     if(!t) return;
     startY = lastY = t.clientY;
@@ -345,4 +348,144 @@ if(document.body.addEventListener){
     }
   });
 }
+
+/* ===== 留言板 · 便签墙（localStorage 持久化） ===== */
+(function(){
+  var KEY = 'lg_board_notes_v1';
+  var MAXLEN = 140;
+  var list = document.getElementById('msgList');
+  var nameInput = document.getElementById('msgName');
+  var textInput = document.getElementById('msgText');
+  var counter = document.getElementById('msgCounter');
+  var sendBtn = document.getElementById('msgSend');
+  if(!list || !textInput || !sendBtn) return;
+  var TAPES = ['#ff6f9c','#5bc8ff','#ffd43b','#63e6be','#a78bfa','#ff9f68'];
+  var RRS = ['-1.6deg','1.8deg','-2.2deg','1.4deg','-1deg','2deg'];
+
+  function load(){
+    try{
+      var a = JSON.parse(localStorage.getItem(KEY));
+      return (Object.prototype.toString.call(a) === '[object Array]') ? a : [];
+    }catch(e){ return []; }
+  }
+  function save(a){ try{ localStorage.setItem(KEY, JSON.stringify(a)); }catch(e){} }
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'"',"'":'&#39;'}[c]; }); }
+  function fmt(ts){
+    var d = new Date(ts);
+    if(isNaN(d.getTime())) return '';
+    function p(n){ return (n<10?'0':'')+n; }
+    return d.getFullYear()+'.'+p(d.getMonth()+1)+'.'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
+  }
+  function cardNode(m, i){
+    if(i == null) i = Math.floor(Math.random()*TAPES.length);
+    var el = document.createElement('div');
+    el.className = 'msg-card';
+    el.style.setProperty('--tape-c', TAPES[i % TAPES.length]);
+    el.style.setProperty('--rr', RRS[i % RRS.length]);
+    el.style.animationDelay = ((i % 8) * 0.08) + 's';
+    el.innerHTML =
+      '<button class="msg-del" type="button" title="删除这张便签">×</button>' +
+      '<div class="msg-head">' +
+        '<span class="msg-ava" style="background:' + TAPES[i % TAPES.length] + '">' + esc((m.name || '客').charAt(0)) + '</span>' +
+        '<span class="msg-name">' + esc(m.name || '神秘访客') + '</span>' +
+        '<span class="msg-time">' + fmt(m.ts) + '</span>' +
+      '</div>' +
+      '<div class="msg-text">' + esc(m.text) + '</div>';
+    return el;
+  }
+  function emptyNode(){
+    var el = document.createElement('div');
+    el.className = 'msg-empty';
+    el.innerHTML = '🌷<br>墙上还没有便签<br><span>来贴出第一张吧</span>';
+    return el;
+  }
+  function render(){
+    var arr = load();
+    list.innerHTML = '';
+    if(!arr.length){ list.appendChild(emptyNode()); return; }
+    for(var i=0;i<arr.length;i++){ list.appendChild(cardNode(arr[i], i)); }
+  }
+  // 首次到访：墙上先贴一张欢迎便签
+  if(localStorage.getItem(KEY) === null){
+    save([{ name:'这里的主人', text:'欢迎路过呀～把想说的悄悄话都贴在这面墙上吧，我会一张一张认真看的 💌', ts: Date.now() }]);
+  }
+  // 删除便签（两步确认，防误触）
+  list.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('.msg-del') : null;
+    if(!btn) return;
+    e.stopPropagation();
+    var card = btn.parentNode;
+    if(btn.dataset.arm === '1'){
+      var arr = load();
+      var idx = Array.prototype.indexOf.call(list.children, card);
+      if(idx > -1) arr.splice(idx, 1);
+      save(arr);
+      render();
+    } else {
+      btn.dataset.arm = '1';
+      btn.classList.add('armed');
+      btn.textContent = '删？';
+      setTimeout(function(){
+        if(btn.isConnected){ btn.dataset.arm = ''; btn.classList.remove('armed'); btn.textContent = '×'; }
+      }, 2600);
+    }
+  });
+  function heartFloat(x, y){
+    var h = document.createElement('div');
+    h.className = 'heart-float';
+    h.textContent = '💌';
+    h.style.left = x + 'px';
+    h.style.top = y + 'px';
+    document.body.appendChild(h);
+    setTimeout(function(){ if(h.parentNode) h.parentNode.removeChild(h); }, 1900);
+  }
+  function updateCounter(){
+    counter.textContent = textInput.value.length + '/' + MAXLEN;
+    counter.classList.toggle('warn', textInput.value.length >= MAXLEN - 20);
+  }
+  textInput.addEventListener('input', updateCounter);
+  // 表情速选：插入到光标处
+  var chips = document.querySelectorAll('.msg-chip');
+  for(var ci=0; ci<chips.length; ci++){
+    (function(chip){
+      chip.addEventListener('click', function(){
+        var emoji = chip.getAttribute('data-emoji') || '';
+        if(textInput.value.length + emoji.length > MAXLEN) return;
+        var s = (textInput.selectionStart == null) ? textInput.value.length : textInput.selectionStart;
+        var e2 = (textInput.selectionEnd == null) ? s : textInput.selectionEnd;
+        textInput.value = textInput.value.slice(0, s) + emoji + textInput.value.slice(e2);
+        var pos = s + emoji.length;
+        updateCounter();
+        textInput.focus();
+        try{ textInput.setSelectionRange(pos, pos); }catch(err){}
+      });
+    })(chips[ci]);
+  }
+  function send(){
+    var t = (textInput.value || '').trim();
+    if(!t){
+      textInput.classList.remove('shake');
+      void textInput.offsetWidth;
+      textInput.classList.add('shake');
+      textInput.focus();
+      return;
+    }
+    var arr = load();
+    var m = { name: (nameInput.value || '').trim().slice(0, 10) || '神秘访客', text: t.slice(0, MAXLEN), ts: Date.now() };
+    arr.unshift(m);
+    save(arr);
+    if(list.firstChild && list.firstChild.classList && list.firstChild.classList.contains('msg-empty')) list.innerHTML = '';
+    list.insertBefore(cardNode(m), list.firstChild);
+    textInput.value = '';
+    updateCounter();
+    var r = sendBtn.getBoundingClientRect();
+    heartFloat(r.left + r.width/2 - 14, r.top - 10);
+  }
+  sendBtn.addEventListener('click', send);
+  textInput.addEventListener('keydown', function(e){
+    if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); send(); }
+  });
+  render();
+  updateCounter();
+})();
 })();

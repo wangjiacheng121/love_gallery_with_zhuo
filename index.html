@@ -140,6 +140,49 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
 /* === 长页滚动优化：允许内层容器原生纵向滚动，避免与翻页手势冲突 === */
 .swiper.swiper-vertical{touch-action:pan-y;overscroll-behavior:contain}
 .category-page{overscroll-behavior:contain}
+
+/* === 留言板页：纵向滚动 + 表单控件手势交给原生 === */
+.category-page.scroll-page{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+.board-page .board-wrap,.board-page textarea,.board-page input{touch-action:pan-y}
+
+/* === 留言板 · 便签墙 === */
+.board-wrap{width:min(92vw,640px);margin:0 auto;display:flex;flex-direction:column;align-items:center;padding-bottom:6vh}
+.board-input-card{width:100%;background:#fff;border-radius:18px;padding:clamp(14px,2.6vmin,22px);box-shadow:0 10px 24px rgba(255,111,156,.15),0 4px 12px rgba(91,200,255,.10);position:relative;margin-top:clamp(12px,2.2vmin,20px);overflow:hidden;opacity:0}
+.page.active .board-input-card{animation:popIn .7s cubic-bezier(.34,1.56,.64,1) .9s forwards}
+.board-input-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:6px;background:repeating-linear-gradient(-45deg,transparent,transparent 5px,#ff6f9c 5px,#ff6f9c 10px);pointer-events:none}
+.msg-name-input{display:block;width:100%;border:2px solid #ffe0ea;background:#fff8fb;border-radius:50px;padding:10px 18px;font-size:14px;color:#4b4b64;font-family:inherit;outline:none;margin-bottom:10px;transition:border-color .25s,box-shadow .25s}
+.msg-name-input:focus{border-color:#ff9fbc;box-shadow:0 0 0 4px rgba(255,111,156,.12)}
+.msg-text-input{display:block;width:100%;min-height:94px;max-height:220px;border:2px solid #e8f4ff;background:#fbfdff;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.7;color:#4b4b64;font-family:inherit;resize:none;outline:none;transition:border-color .25s,box-shadow .25s}
+.msg-text-input:focus{border-color:#a8d8ff;box-shadow:0 0 0 4px rgba(91,200,255,.12);background:#fff}
+.msg-text-input::placeholder,.msg-name-input::placeholder{color:#c9c9db}
+.msg-text-input.shake{animation:msgShake .4s}
+@keyframes msgShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.board-chiprow{display:flex;align-items:center;gap:7px;margin-top:10px;flex-wrap:wrap}
+.msg-chip{border:none;background:#f5f3ff;width:34px;height:34px;border-radius:50%;font-size:17px;cursor:pointer;transition:transform .2s,background .2s;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:0}
+.msg-chip:hover,.msg-chip:active{transform:scale(1.2) rotate(-8deg);background:#ffeef4}
+.msg-counter{margin-left:auto;font-family:"Baloo 2",sans-serif;font-weight:600;font-size:12px;color:#b8b8cc}
+.msg-counter.warn{color:#ff6f9c}
+.msg-send{display:block;width:100%;margin-top:12px;border:none;border-radius:50px;padding:12px 0;font-size:15px;letter-spacing:.3em;text-indent:.3em;color:#fff;background:linear-gradient(90deg,#ff6f9c,#a78bfa);font-family:inherit;cursor:pointer;box-shadow:0 6px 16px rgba(255,111,156,.35);transition:transform .2s,box-shadow .2s}
+.msg-send:hover{transform:translateY(-2px);box-shadow:0 9px 20px rgba(255,111,156,.42)}
+.msg-send:active{transform:scale(.96)}
+.msg-list{width:100%;display:flex;flex-direction:column;gap:clamp(12px,2.2vmin,18px);margin-top:clamp(18px,3vmin,28px)}
+.msg-card{background:#fff;border-radius:14px;padding:14px 16px 13px;position:relative;transform:rotate(var(--rr,0deg));box-shadow:0 6px 16px rgba(255,111,156,.12);opacity:0;backface-visibility:hidden;word-break:break-word}
+.msg-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:5px;background:repeating-linear-gradient(-45deg,transparent,transparent 4px,var(--tape-c,#ff6f9c) 4px,var(--tape-c,#ff6f9c) 8px);border-radius:14px 14px 0 0}
+.page.active .msg-card{animation:msgPop .55s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes msgPop{0%{opacity:0;transform:rotate(var(--rr,0deg)) translateY(18px) scale(.92)}100%{opacity:1;transform:rotate(var(--rr,0deg)) translateY(0) scale(1)}}
+.msg-head{display:flex;align-items:center;gap:8px}
+.msg-ava{width:30px;height:30px;border-radius:50%;color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none;font-family:"Baloo 2",sans-serif;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.15);box-shadow:0 2px 6px rgba(0,0,0,.10)}
+.msg-name{font-size:14px;color:#4b4b64}
+.msg-time{margin-left:auto;font-size:11px;color:#b8b8cc;font-family:"Baloo 2",sans-serif;flex:none}
+.msg-del{position:absolute;top:9px;right:11px;border:none;background:transparent;color:#dcdcea;font-size:17px;line-height:1;cursor:pointer;padding:3px 6px;border-radius:8px;transition:color .2s,background .2s;font-family:sans-serif}
+.msg-del:hover{color:#ff6f9c;background:#fff0f5}
+.msg-del.armed{color:#fff;background:#ff6f9c;font-size:11px;line-height:1.4}
+.msg-text{margin-top:9px;font-size:14px;line-height:1.9;color:#55556e}
+.msg-empty{width:100%;border:2px dashed #ffd0de;border-radius:16px;padding:clamp(22px,5vmin,38px) 16px;text-align:center;color:#ff9fbc;font-size:clamp(15px,3.4vmin,19px);line-height:2.1;transform:rotate(-1.2deg);background:rgba(255,255,255,.6);opacity:0}
+.page.active .msg-empty{animation:popIn .6s cubic-bezier(.34,1.56,.64,1) .2s forwards}
+.msg-empty span{display:block;font-size:clamp(11px,2.6vmin,13px);color:#b8b8cc;letter-spacing:.12em}
+.board-note{margin-top:16px;font-size:11px;color:#c5c5d7;letter-spacing:.1em;text-align:center}
+.swiper-slide:not(.swiper-slide-active) .msg-card,.swiper-slide:not(.swiper-slide-active) .board-input-card,.swiper-slide:not(.swiper-slide-active) .msg-empty{animation-play-state:paused!important}
 </style>
 </head>
 <body>
@@ -333,6 +376,35 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
       <div class="ending-divider"></div>
       <div class="ending-main"><span class="ch" style="animation-delay:1.0s">岁</span><span class="ch" style="animation-delay:1.12s">月</span><span class="ch" style="animation-delay:1.24s">漫</span><span class="ch" style="animation-delay:1.3599999999999999s">长</span><span class="ch" style="animation-delay:1.48s">，</span><span class="ch" style="animation-delay:1.6s">然</span><span class="ch" style="animation-delay:1.72s">而</span><span class="ch" style="animation-delay:1.8399999999999999s">值</span><span class="ch" style="animation-delay:1.96s">得</span><span class="ch" style="animation-delay:2.08s">等</span><span class="ch" style="animation-delay:2.2s">待</span></div>
       <div class="cover-sub">从2024到2026 · 每一个日子都算数</div>
+    </div>
+  </div>
+</div>
+<div class="swiper-slide">
+  <div class="page category-page board-page">
+    <div class="quote board-quote">
+      <div class="poem-line">纸短情长，言不尽意</div>
+      <div class="poem-author">留言板</div>
+      <div class="q-divider"></div>
+      <div class="main"><span class="ch" style="animation-delay:0.9s">把</span><span class="ch" style="animation-delay:1.02s">想</span><span class="ch" style="animation-delay:1.14s">说</span><span class="ch" style="animation-delay:1.26s">的</span><span class="ch" style="animation-delay:1.38s">话</span><span class="ch" style="animation-delay:1.5s">，</span><span class="ch" style="animation-delay:1.62s">贴</span><span class="ch" style="animation-delay:1.74s">在</span><span class="ch" style="animation-delay:1.86s">这</span><span class="ch" style="animation-delay:1.98s">里</span></div>
+      <div class="sub">13 · 留言</div>
+    </div>
+    <div class="board-wrap">
+      <div class="board-input-card">
+        <input class="msg-name-input" id="msgName" type="text" maxlength="10" placeholder="怎么称呼你呀？（可留空）">
+        <textarea class="msg-text-input" id="msgText" maxlength="140" placeholder="写点想说的吧…（140 字以内）"></textarea>
+        <div class="board-chiprow">
+          <button class="msg-chip" type="button" data-emoji="💗">💗</button>
+          <button class="msg-chip" type="button" data-emoji="🌸">🌸</button>
+          <button class="msg-chip" type="button" data-emoji="✨">✨</button>
+          <button class="msg-chip" type="button" data-emoji="🍀">🍀</button>
+          <button class="msg-chip" type="button" data-emoji="🌙">🌙</button>
+          <button class="msg-chip" type="button" data-emoji="🍰">🍰</button>
+          <span class="msg-counter" id="msgCounter">0/140</span>
+        </div>
+        <button class="msg-send" id="msgSend" type="button">贴到墙上</button>
+      </div>
+      <div class="msg-list" id="msgList"></div>
+      <div class="board-note">便签保存在本机浏览器中 · 点便签右上角 × 可删除</div>
     </div>
   </div>
 </div>

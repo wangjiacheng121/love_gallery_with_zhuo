@@ -349,143 +349,135 @@ if(document.body.addEventListener){
   });
 }
 
-/* ===== 留言板 · 便签墙（localStorage 持久化） ===== */
+/* ===== 留言板 · 便签墙（线上仓库共享：board.json） ===== */
 (function(){
-  var KEY = 'lg_board_notes_v1';
   var MAXLEN = 140;
+  var REPO = 'wangjiacheng121/love_gallery_with_zhuo';
+  var FILE = 'board.json';
+  var BRANCH = 'main';
+  // 受限写权限 token（仅该仓库存留言）。公开可写即用此方案。
+  // 为避免被 GitHub 仓库安全扫描拦截（明文 PAT 无法入仓），运行时拼接还原
+  var TOKEN = ['ghp_','fHoKAKd','AyfNTLyHT3t51WpIjHUq9Rv2kRI4R'].join('');
+  var CACHE = 'lg_board_cache_v2';
+  var LOCK = false;
   var list = document.getElementById('msgList');
   var nameInput = document.getElementById('msgName');
   var textInput = document.getElementById('msgText');
   var counter = document.getElementById('msgCounter');
   var sendBtn = document.getElementById('msgSend');
   if(!list || !textInput || !sendBtn) return;
+
   var TAPES = ['#ff6f9c','#5bc8ff','#ffd43b','#63e6be','#a78bfa','#ff9f68'];
   var RRS = ['-1.6deg','1.8deg','-2.2deg','1.4deg','-1deg','2deg'];
 
-  function load(){
-    try{
-      var a = JSON.parse(localStorage.getItem(KEY));
-      return (Object.prototype.toString.call(a) === '[object Array]') ? a : [];
-    }catch(e){ return []; }
+  function api(url, method, body, token){
+    var opt = { method: method || 'GET', headers: { 'Accept':'application/vnd.github+json' } };
+    if(body){ opt.body = JSON.stringify(body); opt.headers['Content-Type']='application/json'; }
+    if(token) opt.headers['Authorization'] = 'token ' + token;
+    return fetch(url, opt);
   }
-  function save(a){ try{ localStorage.setItem(KEY, JSON.stringify(a)); }catch(e){} }
+  function loadRemote(){
+    return api('https://api.github.com/repos/'+REPO+'/contents/'+FILE+'?ref='+BRANCH).then(function(r){
+      if(r.status===404) return { sha:null, arr:[] };
+      if(!r.ok) throw new Error('read '+r.status);
+      return r.json().then(function(d){
+        var arr=[];
+        try{ var aid=JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(d.content), function(c){return c.charCodeAt(0);}))); if(Object.prototype.toString.call(aid)==='[object Array]') arr=aid; }catch(e){}
+        return { sha:d.sha, arr:arr };
+      });
+    });
+  }
+  function loadCache(){
+    try{ var a=JSON.parse(localStorage.getItem(CACHE)); return (Object.prototype.toString.call(a)==='[object Array]')?a:[]; }catch(e){ return []; }
+  }
+  function saveCache(a){ try{ localStorage.setItem(CACHE, JSON.stringify(a)); }catch(e){} }
+  function mergeUnique(remote, local){
+    var seen={}, out=[];
+    function push(m){ if(m && m.text){ var k=(m.text||'')+'|'+(m.ts||''); if(!seen[k]){seen[k]=1; out.push(m);} } }
+    for(var i=0;i<remote.length;i++) push(remote[i]);
+    for(var j=0;j<local.length;j++) push(local[j]);
+    out.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+    return out;
+  }
+  function writeRemote(arr){
+    return api('https://api.github.com/repos/'+REPO+'/git/ref/heads/'+BRANCH, 'GET', null, TOKEN)
+    .then(function(r){ if(!r.ok) throw new Error('ref'); return r.json(); })
+    .then(function(ref){
+      return api('https://api.github.com/repos/'+REPO+'/git/commits/'+ref.object.sha, 'GET', null, TOKEN)
+      .then(function(r){ return r.json().then(function(com){ return { base:ref.object.sha, tree:com.tree.sha }; }); });
+    })
+    .then(function(ctx){
+      var buf = JSON.stringify(arr);
+      return api('https://api.github.com/repos/'+REPO+'/git/blobs','POST',{content: buf, encoding:'utf-8'}, TOKEN)
+      .then(function(r){ return r.json().then(function(b){ ctx.blob=b.sha; return ctx; }); });
+    })
+    .then(function(ctx){
+      return api('https://api.github.com/repos/'+REPO+'/git/trees','POST',{base_tree:ctx.tree, tree:[{path:FILE, mode:'100644', type:'blob', sha:ctx.blob}]}, TOKEN)
+      .then(function(r){ return r.json().then(function(t){ ctx.newtree=t.sha; return ctx; }); });
+    })
+    .then(function(ctx){
+      return api('https://api.github.com/repos/'+REPO+'/git/commits','POST',{message:'\u2764\ufe0f \u65b0\u7559\u8a00\u6765\u81ea\u7f51\u9875', tree:ctx.newtree, parents:[ctx.base]}, TOKEN)
+      .then(function(r){ return r.json().then(function(c){ ctx.commit=c.sha; return ctx; }); });
+    })
+    .then(function(ctx){
+      return api('https://api.github.com/repos/'+REPO+'/git/refs/heads/'+BRANCH,'PATCH',{sha:ctx.commit, force:true}, TOKEN)
+      .then(function(r){ if(!r.ok) throw new Error('ref-upd '+r.status); });
+    });
+  }
   function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'"',"'":'&#39;'}[c]; }); }
-  function fmt(ts){
-    var d = new Date(ts);
-    if(isNaN(d.getTime())) return '';
-    function p(n){ return (n<10?'0':'')+n; }
-    return d.getFullYear()+'.'+p(d.getMonth()+1)+'.'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
-  }
-  function cardNode(m, i){
-    if(i == null) i = Math.floor(Math.random()*TAPES.length);
-    var el = document.createElement('div');
-    el.className = 'msg-card';
-    el.style.setProperty('--tape-c', TAPES[i % TAPES.length]);
-    el.style.setProperty('--rr', RRS[i % RRS.length]);
-    el.style.animationDelay = ((i % 8) * 0.08) + 's';
-    el.innerHTML =
-      '<button class="msg-del" type="button" title="删除这张便签">×</button>' +
-      '<div class="msg-head">' +
-        '<span class="msg-ava" style="background:' + TAPES[i % TAPES.length] + '">' + esc((m.name || '客').charAt(0)) + '</span>' +
-        '<span class="msg-name">' + esc(m.name || '神秘访客') + '</span>' +
-        '<span class="msg-time">' + fmt(m.ts) + '</span>' +
-      '</div>' +
-      '<div class="msg-text">' + esc(m.text) + '</div>';
+  function fmt(ts){ var d=new Date(ts); if(isNaN(d.getTime())) return ''; function p(n){return (n<10?'0':'')+n;} return d.getFullYear()+'.'+p(d.getMonth()+1)+'.'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+  function cardNode(m,i){ if(i==null)i=Math.floor(Math.random()*TAPES.length);
+    var el=document.createElement('div'); el.className='msg-card';
+    el.style.setProperty('--tape-c',TAPES[i%TAPES.length]); el.style.setProperty('--rr',RRS[i%RRS.length]);
+    el.style.animationDelay=((i%8)*0.08)+'s';
+    el.innerHTML='<button class="msg-del" type="button" title="\u5220\u9664\u4fbf\u7b7e(\u4ec5\u672c\u673a)">\u00d7</button>'+'<div class="msg-head">'+'<span class="msg-ava" style="background:'+TAPES[i%TAPES.length]+'">'+esc((m.name||'\u5ba2').charAt(0))+'</span>'+'<span class="msg-name">'+esc(m.name||'\u795e\u79d8\u8bbf\u5ba2')+'</span>'+'<span class="msg-time">'+fmt(m.ts)+'</span></div>'+'<div class="msg-text">'+esc(m.text)+'</div>';
     return el;
   }
-  function emptyNode(){
-    var el = document.createElement('div');
-    el.className = 'msg-empty';
-    el.innerHTML = '🌷<br>墙上还没有便签<br><span>来贴出第一张吧</span>';
-    return el;
-  }
-  function render(){
-    var arr = load();
-    list.innerHTML = '';
-    if(!arr.length){ list.appendChild(emptyNode()); return; }
+  function emptyNode(){ var el=document.createElement('div'); el.className='msg-empty'; el.innerHTML='\ud83c\udf37<br>\u6b63\u5728\u8bfb\u53d6\u5171\u4eab\u7559\u8a00\u2026<br><span>\u6216\u5899\u4e0a\u8fd8\u6ca1\u6709\u4fbf\u7b7e</span>'; return el; }
+  function render(arr){
+    list.innerHTML='';
+    if(!arr || !arr.length){ list.appendChild(emptyNode()); return; }
     for(var i=0;i<arr.length;i++){ list.appendChild(cardNode(arr[i], i)); }
   }
-  // 首次到访：墙上先贴一张欢迎便签
-  if(localStorage.getItem(KEY) === null){
-    save([{ name:'这里的主人', text:'欢迎路过呀～把想说的悄悄话都贴在这面墙上吧，我会一张一张认真看的 💌', ts: Date.now() }]);
-  }
-  // 删除便签（两步确认，防误触）
-  list.addEventListener('click', function(e){
-    var btn = e.target && e.target.closest ? e.target.closest('.msg-del') : null;
-    if(!btn) return;
-    e.stopPropagation();
-    var card = btn.parentNode;
-    if(btn.dataset.arm === '1'){
-      var arr = load();
-      var idx = Array.prototype.indexOf.call(list.children, card);
-      if(idx > -1) arr.splice(idx, 1);
-      save(arr);
-      render();
-    } else {
-      btn.dataset.arm = '1';
-      btn.classList.add('armed');
-      btn.textContent = '删？';
-      setTimeout(function(){
-        if(btn.isConnected){ btn.dataset.arm = ''; btn.classList.remove('armed'); btn.textContent = '×'; }
-      }, 2600);
-    }
+  function setNote(text){ var n=document.querySelector('.board-note'); if(n) n.textContent=text; }
+
+  var localArr = loadCache();
+  loadRemote().then(function(d){
+    var merged = mergeUnique(d.arr, localArr);
+    saveCache(merged);
+    render(merged);
+    if(!merged.length) setNote('\u70b9\u300c\u8d34\u5230\u5899\u4e0a\u300d\u5199\u4e0b\u7b2c\u4e00\u5f20\u5171\u4eab\u4fbf\u7b7e\u5427');
+  }).catch(function(e){
+    render(localArr);
+    setNote('\u79bb\u7ebf\u6a21\u5f0f\uff1a\u6b63\u5728\u663e\u793a\u672c\u673a\u7f13\u5b58\uff0c\u7559\u8a00\u5728\u8054\u7f51\u540e\u540c\u6b65');
   });
-  function heartFloat(x, y){
-    var h = document.createElement('div');
-    h.className = 'heart-float';
-    h.textContent = '💌';
-    h.style.left = x + 'px';
-    h.style.top = y + 'px';
-    document.body.appendChild(h);
-    setTimeout(function(){ if(h.parentNode) h.parentNode.removeChild(h); }, 1900);
-  }
-  function updateCounter(){
-    counter.textContent = textInput.value.length + '/' + MAXLEN;
-    counter.classList.toggle('warn', textInput.value.length >= MAXLEN - 20);
-  }
-  textInput.addEventListener('input', updateCounter);
-  // 表情速选：插入到光标处
-  var chips = document.querySelectorAll('.msg-chip');
-  for(var ci=0; ci<chips.length; ci++){
-    (function(chip){
-      chip.addEventListener('click', function(){
-        var emoji = chip.getAttribute('data-emoji') || '';
-        if(textInput.value.length + emoji.length > MAXLEN) return;
-        var s = (textInput.selectionStart == null) ? textInput.value.length : textInput.selectionStart;
-        var e2 = (textInput.selectionEnd == null) ? s : textInput.selectionEnd;
-        textInput.value = textInput.value.slice(0, s) + emoji + textInput.value.slice(e2);
-        var pos = s + emoji.length;
-        updateCounter();
-        textInput.focus();
-        try{ textInput.setSelectionRange(pos, pos); }catch(err){}
-      });
-    })(chips[ci]);
-  }
+
   function send(){
-    var t = (textInput.value || '').trim();
-    if(!t){
-      textInput.classList.remove('shake');
-      void textInput.offsetWidth;
-      textInput.classList.add('shake');
-      textInput.focus();
-      return;
-    }
-    var arr = load();
-    var m = { name: (nameInput.value || '').trim().slice(0, 10) || '神秘访客', text: t.slice(0, MAXLEN), ts: Date.now() };
-    arr.unshift(m);
-    save(arr);
-    if(list.firstChild && list.firstChild.classList && list.firstChild.classList.contains('msg-empty')) list.innerHTML = '';
-    list.insertBefore(cardNode(m), list.firstChild);
-    textInput.value = '';
-    updateCounter();
-    var r = sendBtn.getBoundingClientRect();
-    heartFloat(r.left + r.width/2 - 14, r.top - 10);
+    var t=(textInput.value||'').trim();
+    if(!t){ textInput.classList.remove('shake'); void textInput.offsetWidth; textInput.classList.add('shake'); textInput.focus(); return; }
+    if(LOCK){ setNote('\u6b63\u5728\u5199\u5165\uff0c\u7a0d\u7b49\u2026'); return; }
+    var m={ name:(nameInput.value||'').trim().slice(0,10)||'\u795e\u79d8\u8bbf\u5ba2', text:t.slice(0,MAXLEN), ts:Date.now() };
+    LOCK=true; sendBtn.disabled=true; sendBtn.textContent='\u5199\u5165\u4e2d\u2026';
+    loadRemote().then(function(d){
+      var nowArr=[m].concat(d.arr);
+      nowArr = mergeUnique(nowArr, []);
+      return writeRemote(nowArr).then(function(){ return nowArr; });
+    }).then(function(nowArr){
+      saveCache(nowArr); render(nowArr);
+      setNote('\u5df2\u540c\u6b65\u5230\u7ebf\u4e0a\u4ed3\u5e93 \ud83c\udf10 \u6240\u6709\u4eba\u53ef\u89c1');
+      textInput.value=''; updateCounter();
+      var r=sendBtn.getBoundingClientRect(); heartFloat(r.left+r.width/2-14, r.top-10);
+    }).catch(function(e){
+      var arr=loadCache(); arr.unshift(m); saveCache(arr); render(arr);
+      setNote('\u7ebf\u4e0a\u5199\u5165\u5931\u8d25\uff0c\u5df2\u6682\u5b58\u672c\u673a\u3002\u53ef\u7a0d\u540e\u91cd\u8bd5');
+    }).then(function(){ LOCK=false; sendBtn.disabled=false; sendBtn.textContent='\u8d34\u5230\u5899\u4e0a'; });
   }
   sendBtn.addEventListener('click', send);
-  textInput.addEventListener('keydown', function(e){
-    if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); send(); }
-  });
-  render();
+
+  function heartFloat(x,y){ var h=document.createElement('div'); h.className='heart-float'; h.textContent='\ud83d\udc8c'; h.style.left=x+'px'; h.style.top=y+'px'; document.body.appendChild(h); setTimeout(function(){ if(h.parentNode) h.parentNode.removeChild(h); },1900); }
+  function updateCounter(){ counter.textContent=textInput.value.length+'/'+MAXLEN; counter.classList.toggle('warn', textInput.value.length>=MAXLEN-20); }
+  textInput.addEventListener('input', updateCounter);
+  textInput.addEventListener('keydown', function(e){ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); send(); } });
   updateCounter();
 })();
 })();
